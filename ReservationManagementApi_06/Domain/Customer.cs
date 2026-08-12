@@ -9,6 +9,7 @@ namespace ReservationManagementApi_06.Domain
         public string Email { get; private set; }
         public DateTimeOffset CreatedAt { get; private set; }
 
+        public ICollection<Reservation> Reservations {get;} = new List<Reservation>();
         
         private Customer()
         {
