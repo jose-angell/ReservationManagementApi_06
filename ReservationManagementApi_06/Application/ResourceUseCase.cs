@@ -1,0 +1,125 @@
+﻿using Microsoft.EntityFrameworkCore;
+using ReservationManagementApi_06.Domain;
+using ReservationManagementApi_06.Dtos.Resource;
+using ReservationManagementApi_06.Exceptions;
+using ReservationManagementApi_06.Infrastructure;
+
+namespace ReservationManagementApi_06.Application
+{
+    public class ResourceUseCase
+    {
+        private readonly AppDbContext _context;
+        public ResourceUseCase(AppDbContext context)
+        {
+            _context = context;
+        }
+        public async Task<ResourceDto> Create(CreateResource request)
+        {
+            var existResourceName = await _context.Resources.AnyAsync(r => r.Name == request.Name);
+            if (existResourceName) throw new ConflictException("Ya existe un recurso con el mismmo nombre.");
+
+            var newResource = new Resource(request.Name!, request.Description!, request.Capacity, request.HourlyRate);
+
+            await _context.Resources.AddAsync(newResource);
+            await _context.SaveChangesAsync();
+
+            return new ResourceDto
+            {
+                Id = newResource.Id,
+                Name = newResource.Name,
+                Description = newResource.Description,
+                Capacity = newResource.Capacity,
+                HourlyRate = newResource.HourlyRate,
+            };
+        }
+        public async Task Update(Guid id, UpdateResource request)
+        {
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
+            if (resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
+
+            var nameExist = await _context.Resources.AnyAsync(r => r.Id != id && r.Name == request.Name);
+            if (nameExist) throw new ConflictException("Ya existe un recurso con el mismmo nombre.");
+
+            resource.Update(request.Name!, request.Description!, request.Capacity, request.HourlyRate);
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task Deete(Guid id)
+        {
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
+            if (resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
+
+            _context.Resources.Remove(resource);
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task Activate(Guid id)
+        {
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
+            if (resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
+
+            resource.Activate();
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task Deactivate(Guid id)
+        {
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
+            if (resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
+
+            resource.Deactivate();
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task<ResourceDto> GetById(Guid id)
+        {
+            var resource = await _context.Resources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+            
+            if(resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
+
+            return MapToDto(resource);
+        }
+        public async Task<IEnumerable<ResourceDto>> GetAll(ResourceQuery paramQuery)
+        {
+            IQueryable<Resource> query = _context.Resources.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(paramQuery.Name))
+            {
+                query = query.Where(r => r.Name.ToLower().Contains(paramQuery.Name.ToLower()));
+            }
+            if (!string.IsNullOrWhiteSpace(paramQuery.Description))
+            {
+                query = query.Where(r => r.Description.ToLower().Contains(paramQuery.Description.ToLower()));
+            }
+            if (paramQuery.MinCapacity.HasValue)
+            {
+                query = query.Where(r => r.Capacity >= paramQuery.MinCapacity);
+            }
+            if (paramQuery.MaxCapacity.HasValue)
+            {
+                query = query.Where(r => r.Capacity <= paramQuery.MaxCapacity);
+            }
+            if (paramQuery.MinHourlyRate.HasValue)
+            {
+                query = query.Where(r => r.HourlyRate >= paramQuery.MinHourlyRate);
+            }
+            if (paramQuery.MaxHourlyRate.HasValue)
+            {
+                query = query.Where(r => r.HourlyRate >= paramQuery.MaxHourlyRate);
+            }
+
+            return await query
+                .Select(r => MapToDto(r))
+                .ToListAsync(); 
+        }
+        private static ResourceDto MapToDto(Resource resource) => new ResourceDto
+        {
+            Id = resource.Id,
+            Name = resource.Name,
+            Description = resource.Description,
+            Capacity = resource.Capacity,
+            HourlyRate = resource.HourlyRate,
+            IsActive = resource.IsActive,
+        };
+    }
+}
