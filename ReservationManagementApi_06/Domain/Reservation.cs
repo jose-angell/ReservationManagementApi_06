@@ -32,10 +32,11 @@ namespace ReservationManagementApi_06.Domain
             TotalPrice = totalPrice;
             CreatedAt = DateTimeOffset.Now;
         }
-        public void Update(DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
+        public void Update(Guid resourceId,DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
         {
             ValidateDates(startDateTime, endDateTime);
             ValidateTotalPrice(totalPrice);
+            ResourceId = resourceId;
             StartDateTime = startDateTime;
             EndDateTime = endDateTime;
             TotalPrice = totalPrice;
