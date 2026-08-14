@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ReservationManagementApi_06;
+using ReservationManagementApi_06.Application;
 using ReservationManagementApi_06.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<CustomerUseCase>();
+builder.Services.AddScoped<ResourceUseCase>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
