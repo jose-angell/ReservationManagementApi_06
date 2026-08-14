@@ -107,9 +107,13 @@ namespace ReservationManagementApi_06.Application
             {
                 query = query.Where(r => r.HourlyRate >= paramQuery.MaxHourlyRate);
             }
+            int pageSize = paramQuery.PageSize;
+            int page = paramQuery.PageNumber;
 
             return await query
                 .Select(r => MapToDto(r))
+                .Skip((page - 1 ) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(); 
         }
         private static ResourceDto MapToDto(Resource resource) => new ResourceDto
