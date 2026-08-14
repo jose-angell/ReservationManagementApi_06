@@ -44,7 +44,7 @@ namespace ReservationManagementApi_06.Application
 
             await _context.SaveChangesAsync();
         }
-        public async Task Deete(Guid id)
+        public async Task Delete(Guid id)
         {
             var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
             if (resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
