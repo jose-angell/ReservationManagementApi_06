@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ReservationManagementApi_06.Application;
+using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Resource;
 
 namespace ReservationManagementApi_06.Controllers
@@ -58,6 +59,13 @@ namespace ReservationManagementApi_06.Controllers
         public async Task<IActionResult> GetAll([FromQuery] ResourceQuery query)
         {
             var result = await _useCase.GetAll(query);
+            return Ok(result);
+        }
+        [HttpGet("{resourceId:guid}/availability")]
+        public async Task<IActionResult> Availability([FromRoute] Guid resourceId , [FromQuery] DateTimeOffset startDateTime, [FromQuery] DateTimeOffset endDateTime)
+        {
+            if (resourceId == Guid.Empty) return BadRequest("El id es invalido.");
+            var result = await _useCase.Availability(resourceId, startDateTime, endDateTime);
             return Ok(result);
         }
     }

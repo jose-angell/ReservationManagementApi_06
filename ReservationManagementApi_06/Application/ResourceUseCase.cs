@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReservationManagementApi_06.Domain;
+using ReservationManagementApi_06.Dtos.Reservation;
 using ReservationManagementApi_06.Dtos.Resource;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Infrastructure;
@@ -117,6 +118,47 @@ namespace ReservationManagementApi_06.Application
                 .Skip((page - 1 ) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(); 
+        }
+        public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
+        {
+            if (startTime >= endTime) throw new ConflictException("las fechas no son validas.");
+
+            var existConflict = await _context.Reservations.AsNoTracking()
+                .Select(reservation => new ReservationDto
+                {
+                    Id = reservation.Id,
+                    CustomerId = reservation.CustomerId,
+                    CustomerName = reservation.Customer.FullName,
+                    ResourceId = reservation.ResourceId,
+                    ResourceName = reservation.Resource.Name,
+                    StartDateTime = reservation.StartDateTime,
+                    EndDateTime = reservation.EndDateTime,
+                    TotalPrice = reservation.TotalPrice,
+
+                }).Where(r => r.ResourceId == resourceId
+                && (startTime < r.EndDateTime && endTime > r.StartDateTime)).ToListAsync();
+
+            if (existConflict.Any())
+            {
+                return new AvailabilityDto
+                {
+                    ResourceId = resourceId,
+                    ResourceName = "",
+                    StartDateTime = startTime,
+                    EndDateTime = endTime,
+                    IsAvailable = false,
+                    conflictingReservations = existConflict
+                };
+            }
+            return new AvailabilityDto
+            {
+                ResourceId = resourceId,
+                ResourceName = "",
+                StartDateTime = startTime,
+                EndDateTime = endTime,
+                IsAvailable = true,
+                conflictingReservations = existConflict
+            };
         }
         private static ResourceDto MapToDto(Resource resource) => new ResourceDto
         {

@@ -14,6 +14,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<CustomerUseCase>();
 builder.Services.AddScoped<ResourceUseCase>();
+builder.Services.AddScoped<ReservationUseCase>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

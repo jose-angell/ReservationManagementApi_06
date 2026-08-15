@@ -129,34 +129,7 @@ namespace ReservationManagementApi_06.Application
                 .Take(page)
                 .ToListAsync();
         }
-        public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
-        {
-            var existConflict = await _context.Reservations.AsNoTracking()
-                .Select(r =>  MapToDto(r)).Where(r => r.ResourceId == resourceId
-                && (startTime < r.EndDateTime && endTime > r.StartDateTime)).ToListAsync();
-
-            if (existConflict.Any())
-            {
-                return new AvailabilityDto
-                {
-                    ResourceId = resourceId,
-                    ResourceName = "",
-                    StartDateTime = startTime,
-                    EndDateTime = endTime,
-                    IsAvailable = false,
-                    conflictingReservations = existConflict
-                };
-            }
-            return new AvailabilityDto
-            {
-                ResourceId = resourceId,
-                ResourceName = "",
-                StartDateTime = startTime,
-                EndDateTime = endTime,
-                IsAvailable = true,
-                conflictingReservations = existConflict
-            };
-        }
+       
         private decimal CalculateTotalPrice(DateTimeOffset startTime, DateTimeOffset endTime, decimal hourlyRate)
         {
             // 1. Restamos las fechas. Esto devuelve un TimeSpan.
