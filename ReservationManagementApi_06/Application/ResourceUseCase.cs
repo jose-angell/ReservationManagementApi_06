@@ -109,6 +109,8 @@ namespace ReservationManagementApi_06.Application
             }
             int pageSize = paramQuery.PageSize;
             int page = paramQuery.PageNumber;
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
             return await query
                 .Select(r => MapToDto(r))

@@ -6,7 +6,9 @@ namespace ReservationManagementApi_06.Dtos.Reservation
     {
         public Guid Id { get; set; }
         public Guid CustomerId { get; set; }
+        public string CustomerName { get; set; }
         public Guid ResourceId { get; set; }
+        public string ResourceName { get; set; }
         public DateTimeOffset StartDateTime { get; set; }
         public DateTimeOffset EndDateTime { get; set; }
         public StatusReservation Status { get; set; }
