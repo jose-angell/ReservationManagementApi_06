@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Reservation;
+using ReservationManagementApi_06.Dtos.Resource;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Infrastructure;
 
@@ -127,6 +128,34 @@ namespace ReservationManagementApi_06.Application
                 .Skip((page -1) * pageSize)
                 .Take(page)
                 .ToListAsync();
+        }
+        public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
+        {
+            var existConflict = await _context.Reservations.AsNoTracking()
+                .Select(r =>  MapToDto(r)).Where(r => r.ResourceId == resourceId
+                && (startTime < r.EndDateTime && endTime > r.StartDateTime)).ToListAsync();
+
+            if (existConflict.Any())
+            {
+                return new AvailabilityDto
+                {
+                    ResourceId = resourceId,
+                    ResourceName = "",
+                    StartDateTime = startTime,
+                    EndDateTime = endTime,
+                    IsAvailable = false,
+                    conflictingReservations = existConflict
+                };
+            }
+            return new AvailabilityDto
+            {
+                ResourceId = resourceId,
+                ResourceName = "",
+                StartDateTime = startTime,
+                EndDateTime = endTime,
+                IsAvailable = true,
+                conflictingReservations = existConflict
+            };
         }
         private decimal CalculateTotalPrice(DateTimeOffset startTime, DateTimeOffset endTime, decimal hourlyRate)
         {
