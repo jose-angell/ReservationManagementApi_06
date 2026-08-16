@@ -76,8 +76,8 @@ namespace ReservationManagementApi_06.Application
         public async Task<ResourceDto> GetById(Guid id)
         {
             var resource = await _context.Resources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
-            
-            if(resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
+
+            if (resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
 
             return MapToDto(resource);
         }
@@ -116,9 +116,9 @@ namespace ReservationManagementApi_06.Application
 
             return await query
                 .Select(r => MapToDto(r))
-                .Skip((page - 1 ) * pageSize)
+                .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync(); 
+                .ToListAsync();
         }
         public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
         {

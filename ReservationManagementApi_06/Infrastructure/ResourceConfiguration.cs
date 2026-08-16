@@ -4,7 +4,7 @@ using ReservationManagementApi_06.Domain;
 
 namespace ReservationManagementApi_06.Infrastructure
 {
-    public class ResourceConfiguration: IEntityTypeConfiguration<Resource>
+    public class ResourceConfiguration : IEntityTypeConfiguration<Resource>
     {
         public void Configure(EntityTypeBuilder<Resource> builder)
         {

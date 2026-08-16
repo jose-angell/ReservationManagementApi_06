@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Reservation;
-using ReservationManagementApi_06.Dtos.Resource;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Infrastructure;
 
@@ -125,18 +124,18 @@ namespace ReservationManagementApi_06.Application
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
             return await query.Select(r => MapToDto(r))
-                .Skip((page -1) * pageSize)
+                .Skip((page - 1) * pageSize)
                 .Take(page)
                 .ToListAsync();
         }
-       
+
         private decimal CalculateTotalPrice(DateTimeOffset startTime, DateTimeOffset endTime, decimal hourlyRate)
         {
             // 1. Restamos las fechas. Esto devuelve un TimeSpan.
             TimeSpan duration = endTime - startTime;
 
             // 2. Obtenemos el total de horas (es de tipo double, así que lo pasamos a decimal)
-            
+
             decimal totalHours = (decimal)Math.Ceiling(duration.TotalHours);
 
             // 3. Multiplicamos por la tarifa

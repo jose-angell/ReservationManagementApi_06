@@ -11,8 +11,8 @@ namespace ReservationManagementApi_06.Domain
         public decimal HourlyRate { get; private set; }
         public bool IsActive { get; private set; }
 
-        public ICollection<Reservation> Reservations {get; } = new List<Reservation>();
-        private Resource() 
+        public ICollection<Reservation> Reservations { get; } = new List<Reservation>();
+        private Resource()
         {
             Name = string.Empty;
             Description = string.Empty;

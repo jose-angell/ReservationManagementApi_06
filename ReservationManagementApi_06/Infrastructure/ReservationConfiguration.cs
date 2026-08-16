@@ -13,7 +13,7 @@ namespace ReservationManagementApi_06.Infrastructure
             builder.Property(r => r.CustomerId).IsRequired();
             builder.Property(r => r.ResourceId).IsRequired();
             builder.Property(r => r.StartDateTime).IsRequired();
-            builder.Property(r =>r.EndDateTime).IsRequired();
+            builder.Property(r => r.EndDateTime).IsRequired();
             builder.Property(r => r.Status).IsRequired();
             builder.Property(r => r.TotalPrice).HasColumnName("total_price").HasPrecision(18, 2).IsRequired();
             builder.Property(r => r.CreatedAt).IsRequired();

@@ -5,7 +5,7 @@ namespace ReservationManagementApi_06.Domain
     public class Reservation
     {
         public Guid Id { get; private set; }
-        public Guid CustomerId { get; private set; } 
+        public Guid CustomerId { get; private set; }
         public Guid ResourceId { get; private set; }
         public DateTimeOffset StartDateTime { get; private set; }
         public DateTimeOffset EndDateTime { get; private set; }
@@ -32,7 +32,7 @@ namespace ReservationManagementApi_06.Domain
             TotalPrice = totalPrice;
             CreatedAt = DateTimeOffset.Now.ToUniversalTime();
         }
-        public void Update(Guid resourceId,DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
+        public void Update(Guid resourceId, DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
         {
             ValidateDates(startDateTime, endDateTime);
             ValidateTotalPrice(totalPrice);
@@ -57,7 +57,7 @@ namespace ReservationManagementApi_06.Domain
         }
         public void Cancel()
         {
-            if (Status == StatusReservation.Cancelled )
+            if (Status == StatusReservation.Cancelled)
             {
                 throw new DomainException("Reservation is already cancelled.");
             }
@@ -81,7 +81,7 @@ namespace ReservationManagementApi_06.Domain
             {
                 throw new DomainException("Start date and time must be before end date and time.");
             }
-           
+
         }
         private void ValidateTotalPrice(decimal totalPrice)
         {

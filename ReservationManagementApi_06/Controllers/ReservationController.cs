@@ -6,7 +6,7 @@ namespace ReservationManagementApi_06.Controllers
 {
     [ApiController]
     [Route("api/reservations")]
-    public class ReservationController: ControllerBase
+    public class ReservationController : ControllerBase
     {
         private readonly ReservationUseCase _useCase;
         public ReservationController(ReservationUseCase useCase)
@@ -24,7 +24,7 @@ namespace ReservationManagementApi_06.Controllers
         public async Task<IActionResult> Create(CreateReservation request)
         {
             var result = await _useCase.Create(request);
-            return CreatedAtAction(nameof(GetById), new {id = result.Id}, result);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateReservation request)
