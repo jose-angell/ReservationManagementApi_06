@@ -34,6 +34,7 @@ namespace ReservationManagementApi_06.Domain
         }
         public void Update(Guid resourceId, DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
         {
+            if (Status != StatusReservation.Pending) throw new DomainException("Solo las reservas penditentes pueden ser editadas");
             ValidateDates(startDateTime, endDateTime);
             ValidateTotalPrice(totalPrice);
             ResourceId = resourceId;
@@ -41,11 +42,12 @@ namespace ReservationManagementApi_06.Domain
             EndDateTime = endDateTime.ToUniversalTime();
             TotalPrice = totalPrice;
         }
-        public void UpdateDates(DateTimeOffset startDateTime, DateTimeOffset endDateTime)
+        public void UpdateDates(DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
         {
             ValidateDates(startDateTime, endDateTime);
             StartDateTime = startDateTime.ToUniversalTime();
             EndDateTime = endDateTime.ToUniversalTime();
+            TotalPrice = totalPrice;
         }
         public void Confirm()
         {
@@ -82,10 +84,14 @@ namespace ReservationManagementApi_06.Domain
                 throw new DomainException("Start date and time must be before end date and time.");
             }
 
+            if (startDateTime < DateTimeOffset.Now.ToUniversalTime())
+            {
+                throw new DomainException("la fecha no puede estar en el pasado.");
+            }
         }
         private void ValidateTotalPrice(decimal totalPrice)
         {
-            if (totalPrice < 0)
+            if (totalPrice <= 0)
             {
                 throw new DomainException("Total price must be a positive value.");
             }

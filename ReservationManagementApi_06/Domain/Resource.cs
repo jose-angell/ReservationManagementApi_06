@@ -46,7 +46,7 @@ namespace ReservationManagementApi_06.Domain
         }
         public void UpdateHourlyRate(decimal newHourlyRate)
         {
-            if (newHourlyRate < 0)
+            if (newHourlyRate <= 0)
             {
                 throw new DomainException("Hourly rate cannot be negative.");
             }
@@ -65,6 +65,10 @@ namespace ReservationManagementApi_06.Domain
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new DomainException("Name cannot be null or empty.");
+            }
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new DomainException("description cannot be null or empty.");
             }
             if (capacity <= 0)
             {

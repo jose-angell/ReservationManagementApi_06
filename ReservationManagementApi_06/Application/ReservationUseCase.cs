@@ -53,6 +53,8 @@ namespace ReservationManagementApi_06.Application
             var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id);
             if (reservation == null) throw new NotFoundException("La reserva no se encontro en el sistema.");
 
+            if(reservation.Status != StatusReservation.Pending ) throw new ConflictException("Solo las reservas penditentes pueden ser editadas");
+
             var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId);
             if (resource == null) throw new NotFoundException("El recurso no se encontro en el sistema.");
 
