@@ -15,7 +15,7 @@ namespace ReservationManagementApi_06.Domain
         {
             FullName = string.Empty;
             Email = string.Empty;
-            CreatedAt = DateTimeOffset.Now;
+            CreatedAt = DateTimeOffset.Now.ToUniversalTime();
         }
         public Customer(string fullName, string email)
         {
@@ -23,7 +23,7 @@ namespace ReservationManagementApi_06.Domain
             Id = Guid.NewGuid();
             FullName = fullName;
             Email = email;
-            CreatedAt = DateTimeOffset.Now;
+            CreatedAt = DateTimeOffset.Now.ToUniversalTime();
         }
         public void Update(string fullName, string email)
         {

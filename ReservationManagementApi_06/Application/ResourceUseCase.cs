@@ -31,6 +31,7 @@ namespace ReservationManagementApi_06.Application
                 Description = newResource.Description,
                 Capacity = newResource.Capacity,
                 HourlyRate = newResource.HourlyRate,
+                IsActive = newResource.IsActive
             };
         }
         public async Task Update(Guid id, UpdateResource request)
@@ -121,6 +122,9 @@ namespace ReservationManagementApi_06.Application
         }
         public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
         {
+            var existResource = await _context.Resources.AnyAsync(r => r.Id == resourceId);
+            if (existResource) throw new NotFoundException("El recurso no se encontro en el sistema.");
+
             if (startTime >= endTime) throw new ConflictException("las fechas no son validas.");
 
             var existConflict = await _context.Reservations.AsNoTracking()
@@ -136,7 +140,7 @@ namespace ReservationManagementApi_06.Application
                     TotalPrice = reservation.TotalPrice,
 
                 }).Where(r => r.ResourceId == resourceId
-                && (startTime < r.EndDateTime && endTime > r.StartDateTime)).ToListAsync();
+                && (startTime.ToUniversalTime() < r.EndDateTime && endTime.ToUniversalTime() > r.StartDateTime)).ToListAsync();
 
             if (existConflict.Any())
             {

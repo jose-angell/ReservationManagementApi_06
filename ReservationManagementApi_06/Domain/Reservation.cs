@@ -26,26 +26,26 @@ namespace ReservationManagementApi_06.Domain
             Id = Guid.NewGuid();
             CustomerId = customerId;
             ResourceId = resourceId;
-            StartDateTime = startDateTime;
-            EndDateTime = endDateTime;
+            StartDateTime = startDateTime.ToUniversalTime();
+            EndDateTime = endDateTime.ToUniversalTime();
             Status = StatusReservation.Pending;
             TotalPrice = totalPrice;
-            CreatedAt = DateTimeOffset.Now;
+            CreatedAt = DateTimeOffset.Now.ToUniversalTime();
         }
         public void Update(Guid resourceId,DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
         {
             ValidateDates(startDateTime, endDateTime);
             ValidateTotalPrice(totalPrice);
             ResourceId = resourceId;
-            StartDateTime = startDateTime;
-            EndDateTime = endDateTime;
+            StartDateTime = startDateTime.ToUniversalTime();
+            EndDateTime = endDateTime.ToUniversalTime();
             TotalPrice = totalPrice;
         }
         public void UpdateDates(DateTimeOffset startDateTime, DateTimeOffset endDateTime)
         {
             ValidateDates(startDateTime, endDateTime);
-            StartDateTime = startDateTime;
-            EndDateTime = endDateTime;
+            StartDateTime = startDateTime.ToUniversalTime();
+            EndDateTime = endDateTime.ToUniversalTime();
         }
         public void Confirm()
         {

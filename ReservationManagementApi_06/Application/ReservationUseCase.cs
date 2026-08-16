@@ -26,7 +26,7 @@ namespace ReservationManagementApi_06.Application
 
             var existConflict = await _context.Reservations
                 .AnyAsync(r => r.ResourceId == request.ResourceId
-                && (request.StartDateTime < r.EndDateTime && request.EndDateTime > r.StartDateTime));
+                && (request.StartDateTime!.Value.ToUniversalTime() < r.EndDateTime && request.EndDateTime!.Value.ToUniversalTime() > r.StartDateTime));
             if (existConflict) throw new ConflictException("Existe un conflicto entre los horarios seleccionados.");
 
             var totalPrice = CalculateTotalPrice(request.StartDateTime!.Value, request.EndDateTime!.Value, resource.HourlyRate);
@@ -61,7 +61,7 @@ namespace ReservationManagementApi_06.Application
 
             var existConflict = await _context.Reservations
                 .AnyAsync(r => r.ResourceId == request.ResourceId && r.Id != id
-                && (request.StartDateTime < r.EndDateTime && request.EndDateTime > r.StartDateTime));
+                && (request.StartDateTime!.Value.ToUniversalTime() < r.EndDateTime && request.EndDateTime!.Value.ToUniversalTime() > r.StartDateTime));
             if (existConflict) throw new ConflictException("Existe un conflicto entre los horarios seleccionados.");
 
             var totalPrice = CalculateTotalPrice(request.StartDateTime!.Value, request.EndDateTime!.Value, resource.HourlyRate);
@@ -102,11 +102,11 @@ namespace ReservationManagementApi_06.Application
             }
             if (paramQuery.FromDate.HasValue)
             {
-                query = query.Where(r => r.StartDateTime >= paramQuery.FromDate.Value);
+                query = query.Where(r => r.StartDateTime >= paramQuery.FromDate!.Value.ToUniversalTime());
             }
             if (paramQuery.ToDate.HasValue)
             {
-                query = query.Where(r => r.EndDateTime <= paramQuery.ToDate.Value);
+                query = query.Where(r => r.EndDateTime <= paramQuery.ToDate!.Value.ToUniversalTime());
             }
 
             query = paramQuery.SortBy?.ToLower() switch

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ReservationManagementApi_06.Application;
-using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Resource;
 
 namespace ReservationManagementApi_06.Controllers
@@ -15,7 +14,7 @@ namespace ReservationManagementApi_06.Controllers
             _useCase = useCase;
         }
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById([FromQuery] Guid id)
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
             if (id == Guid.Empty) return BadRequest("El id es invalido.");
             var resource = await _useCase.GetById(id);
@@ -25,7 +24,7 @@ namespace ReservationManagementApi_06.Controllers
         public async Task<IActionResult> Create([FromBody] CreateResource request)
         {
             var newResource = await _useCase.Create(request);
-            return CreatedAtAction(nameof(GetById), new {id = newResource.Id}, newResource);
+            return CreatedAtAction(nameof(GetById), new { id = newResource.Id }, newResource);
         }
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateResource request)
@@ -34,7 +33,7 @@ namespace ReservationManagementApi_06.Controllers
             await _useCase.Update(id, request);
             return NoContent();
         }
-        [HttpDelete("{id:giud}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             if (id == Guid.Empty) return BadRequest("El id es invalido.");
@@ -62,7 +61,7 @@ namespace ReservationManagementApi_06.Controllers
             return Ok(result);
         }
         [HttpGet("{resourceId:guid}/availability")]
-        public async Task<IActionResult> Availability([FromRoute] Guid resourceId , [FromQuery] DateTimeOffset startDateTime, [FromQuery] DateTimeOffset endDateTime)
+        public async Task<IActionResult> Availability([FromRoute] Guid resourceId, [FromQuery] DateTimeOffset startDateTime, [FromQuery] DateTimeOffset endDateTime)
         {
             if (resourceId == Guid.Empty) return BadRequest("El id es invalido.");
             var result = await _useCase.Availability(resourceId, startDateTime, endDateTime);
