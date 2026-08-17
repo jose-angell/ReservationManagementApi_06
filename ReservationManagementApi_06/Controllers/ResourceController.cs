@@ -67,5 +67,11 @@ namespace ReservationManagementApi_06.Controllers
             var result = await _useCase.Availability(resourceId, startDateTime, endDateTime);
             return Ok(result);
         }
+        [HttpGet("availability")]
+        public async Task<IActionResult> AvailabilityRangeDates( [FromQuery] DateTimeOffset startDateTime, [FromQuery] DateTimeOffset endDateTime)
+        {
+            var result = await _useCase.GetAvailableResources(startDateTime, endDateTime);
+            return Ok(result);
+        }
     }
 }

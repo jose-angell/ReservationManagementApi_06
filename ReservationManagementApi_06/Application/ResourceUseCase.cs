@@ -134,7 +134,7 @@ namespace ReservationManagementApi_06.Application
         }
         public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
         {
-            var existResource = await _context.Resources.AnyAsync(r => r.Id == resourceId);
+            var existResource = await _context.Resources.AnyAsync(r => r.Id == resourceId && r.IsActive == true);
             if (!existResource) throw new NotFoundException("El recurso no se encontro en el sistema.");
 
             if (startTime >= endTime) throw new ConflictException("las fechas no son validas.");
@@ -180,6 +180,32 @@ namespace ReservationManagementApi_06.Application
                 IsAvailable = true,
                 conflictingReservations = existConflict
             };
+        }
+        public async Task<IEnumerable<ResourceDto>> GetAvailableResources(DateTimeOffset startTime, DateTimeOffset endTime)
+        {
+            if (startTime >= endTime) throw new ConflictException("las fechas no son validas.");
+
+           
+            return await _context.Resources.AsNoTracking()
+                .Where(resource => resource.IsActive)
+                .Where(resource => !resource.Reservations.Any(reservation =>
+                      (reservation.Status == StatusReservation.Pending || reservation.Status == StatusReservation.Confirmed)
+                      &&
+                      startTime < reservation.EndDateTime
+                      &&
+                      endTime > reservation.StartDateTime
+                  ))
+                .Select(resource => new ResourceDto
+                {
+                    Id = resource.Id,
+                    Name = resource.Name,
+                    Description = resource.Description,
+                    Capacity = resource.Capacity,
+                    HourlyRate = resource.HourlyRate,
+                    IsActive = resource.IsActive,
+                })
+                .ToListAsync();
+
         }
         private static ResourceDto MapToDto(Resource resource) => new ResourceDto
         {

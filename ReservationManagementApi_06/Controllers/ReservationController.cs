@@ -46,5 +46,26 @@ namespace ReservationManagementApi_06.Controllers
             var result = await _useCase.GetAll(query);
             return Ok(result);
         }
+        [HttpPatch("{id:guid}/confirm")]
+        public async Task<IActionResult> Confirm([FromRoute] Guid id)
+        {
+            if (id == Guid.Empty) return BadRequest("El id es invalido.");
+            await _useCase.Confirm(id);
+            return NoContent();
+        }
+        [HttpPatch("{id:guid}/cancel")]
+        public async Task<IActionResult> Cancel([FromRoute] Guid id)
+        {
+            if (id == Guid.Empty) return BadRequest("El id es invalido.");
+            await _useCase.Cancel(id);
+            return NoContent();
+        }
+        [HttpPatch("{id:guid}/complete")]
+        public async Task<IActionResult> Complete([FromRoute] Guid id)
+        {
+            if (id == Guid.Empty) return BadRequest("El id es invalido.");
+            await _useCase.Complete(id);
+            return NoContent();
+        }
     }
 }

@@ -3,7 +3,12 @@ using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Reservation;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Infrastructure;
-
+/* Estrategia para manejar concurrencia
+ * la forma mas segura seria utilizado una exclusion constrains en la base de datos
+ * confiugrando una funcion para validar el rango de tiempo (tsrange) con una restrincion de exclusion
+ * impidiendo que alguien guarde un registro donde el ResourceId y el reango de fechas ya este registrado
+ * 
+ */
 namespace ReservationManagementApi_06.Application
 {
     public class ReservationUseCase
@@ -144,7 +149,33 @@ namespace ReservationManagementApi_06.Application
                 .Take(pageSize)
                 .ToListAsync();
         }
+        public async Task Confirm(Guid id)
+        {
+            var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id);
+            if (reservation == null) throw new NotFoundException("La reserva no se encontro en el sistema.");
 
+            reservation.Confirm();
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task Cancel(Guid id)
+        {
+            var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id);
+            if (reservation == null) throw new NotFoundException("La reserva no se encontro en el sistema.");
+
+            reservation.Cancel();
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task Complete(Guid id)
+        {
+            var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id);
+            if (reservation == null) throw new NotFoundException("La reserva no se encontro en el sistema.");
+
+            reservation.Complete();
+
+            await _context.SaveChangesAsync();
+        }
         private decimal CalculateTotalPrice(DateTimeOffset startTime, DateTimeOffset endTime, decimal hourlyRate)
         {
             // 1. Restamos las fechas. Esto devuelve un TimeSpan.
