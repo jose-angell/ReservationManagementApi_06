@@ -18,13 +18,13 @@ namespace ReservationManagementApi_06.Application
             var existCustomer = await _context.Customers.AnyAsync(c => c.Id == request.CustomerId);
             if (!existCustomer) throw new NotFoundException("El cliente no se encontro en el sistema.");
 
-            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId);
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId && r.IsActive == true);
             if (resource == null) throw new NotFoundException("El recurso no se encontro en el sistema.");
 
             if (request.StartDateTime >= request.EndDateTime) throw new ConflictException("las fechas no son validas.");
 
             var existConflict = await _context.Reservations
-                .AnyAsync(r => r.ResourceId == request.ResourceId
+                .AnyAsync(r => r.ResourceId == request.ResourceId && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
                 && (request.StartDateTime!.Value.ToUniversalTime() < r.EndDateTime && request.EndDateTime!.Value.ToUniversalTime() > r.StartDateTime));
             if (existConflict) throw new ConflictException("Existe un conflicto entre los horarios seleccionados.");
 
@@ -55,13 +55,13 @@ namespace ReservationManagementApi_06.Application
 
             if(reservation.Status != StatusReservation.Pending ) throw new ConflictException("Solo las reservas penditentes pueden ser editadas");
 
-            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId);
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId && r.IsActive == true);
             if (resource == null) throw new NotFoundException("El recurso no se encontro en el sistema.");
 
             if (request.StartDateTime >= request.EndDateTime) throw new ConflictException("las fechas no son validas.");
 
             var existConflict = await _context.Reservations
-                .AnyAsync(r => r.ResourceId == request.ResourceId && r.Id != id
+                .AnyAsync(r => r.ResourceId == request.ResourceId && r.Id != id && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
                 && (request.StartDateTime!.Value.ToUniversalTime() < r.EndDateTime && request.EndDateTime!.Value.ToUniversalTime() > r.StartDateTime));
             if (existConflict) throw new ConflictException("Existe un conflicto entre los horarios seleccionados.");
 
@@ -74,6 +74,8 @@ namespace ReservationManagementApi_06.Application
         {
             var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id);
             if (reservation == null) throw new NotFoundException("La reserva no se encontro en el sistema.");
+
+            if (reservation.Status != StatusReservation.Pending) throw new ConflictException("Solo las reservas pendientes pueden ser eliminadas.");
 
             _context.Remove(reservation);
             await _context.SaveChangesAsync();
@@ -103,11 +105,11 @@ namespace ReservationManagementApi_06.Application
             }
             if (paramQuery.FromDate.HasValue)
             {
-                query = query.Where(r => r.StartDateTime >= paramQuery.FromDate!.Value.ToUniversalTime());
+                query = query.Where(r => r.EndDateTime > paramQuery.FromDate!.Value.ToUniversalTime());
             }
             if (paramQuery.ToDate.HasValue)
             {
-                query = query.Where(r => r.EndDateTime <= paramQuery.ToDate!.Value.ToUniversalTime());
+                query = query.Where(r => r.StartDateTime < paramQuery.ToDate!.Value.ToUniversalTime());
             }
 
             query = paramQuery.SortBy?.ToLower() switch
@@ -125,9 +127,21 @@ namespace ReservationManagementApi_06.Application
             if (page < 1) page = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-            return await query.Select(r => MapToDto(r))
-                .Skip((page - 1) * pageSize)
-                .Take(page)
+            return await query.Select(reservation => new ReservationDto
+            {
+                Id = reservation.Id,
+                CustomerId = reservation.CustomerId,
+                CustomerName = reservation.Customer.FullName,
+                ResourceId = reservation.ResourceId,
+                ResourceName = reservation.Resource.Name,
+                StartDateTime = reservation.StartDateTime,
+                EndDateTime = reservation.EndDateTime,
+                TotalPrice = reservation.TotalPrice,
+                Status = reservation.Status,
+                CreatedAt = reservation.CreatedAt,
+
+            }).Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
 
@@ -155,6 +169,8 @@ namespace ReservationManagementApi_06.Application
             StartDateTime = reservation.StartDateTime,
             EndDateTime = reservation.EndDateTime,
             TotalPrice = reservation.TotalPrice,
+            Status = reservation.Status,
+            CreatedAt = reservation.CreatedAt,
 
         };
     }

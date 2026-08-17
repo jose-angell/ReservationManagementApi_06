@@ -48,6 +48,9 @@ namespace ReservationManagementApi_06.Application
             {
                 throw new NotFoundException("Cliente no encontrado.");
             }
+            var hasResevation = await _context.Reservations.AnyAsync(c => c.ResourceId == id);
+            if (hasResevation) throw new ConflictException("No se puede eliminar un cliente con reservaciones registradas.");
+
             _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
         }

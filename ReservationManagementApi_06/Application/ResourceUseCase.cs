@@ -51,6 +51,9 @@ namespace ReservationManagementApi_06.Application
             var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
             if (resource == null) throw new NotFoundException("No se en contro el recurso en el sistema.");
 
+            var hasReservation = await _context.Reservations.AnyAsync(r => r.ResourceId == id);
+            if (hasReservation) throw new ConflictException("No se puede eliminar un recurso con reservaciones registradas.");
+
             _context.Resources.Remove(resource);
 
             await _context.SaveChangesAsync();
@@ -95,19 +98,19 @@ namespace ReservationManagementApi_06.Application
             }
             if (paramQuery.MinCapacity.HasValue)
             {
-                query = query.Where(r => r.Capacity >= paramQuery.MinCapacity);
+                query = query.Where(r => r.Capacity >= paramQuery.MinCapacity.Value);
             }
             if (paramQuery.MaxCapacity.HasValue)
             {
-                query = query.Where(r => r.Capacity <= paramQuery.MaxCapacity);
+                query = query.Where(r => r.Capacity <= paramQuery.MaxCapacity.Value);
             }
             if (paramQuery.MinHourlyRate.HasValue)
             {
-                query = query.Where(r => r.HourlyRate >= paramQuery.MinHourlyRate);
+                query = query.Where(r => r.HourlyRate >= paramQuery.MinHourlyRate.Value);
             }
             if (paramQuery.MaxHourlyRate.HasValue)
             {
-                query = query.Where(r => r.HourlyRate >= paramQuery.MaxHourlyRate);
+                query = query.Where(r => r.HourlyRate <= paramQuery.MaxHourlyRate.Value);
             }
             int pageSize = paramQuery.PageSize;
             int page = paramQuery.PageNumber;
@@ -115,7 +118,16 @@ namespace ReservationManagementApi_06.Application
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
             return await query
-                .Select(r => MapToDto(r))
+                .Select(resource => new ResourceDto
+                {
+                    Id = resource.Id,
+                    Name = resource.Name,
+                    Description = resource.Description,
+                    Capacity = resource.Capacity,
+                    HourlyRate = resource.HourlyRate,
+                    IsActive = resource.IsActive,
+                })
+                .OrderBy(r => r.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -123,11 +135,14 @@ namespace ReservationManagementApi_06.Application
         public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
         {
             var existResource = await _context.Resources.AnyAsync(r => r.Id == resourceId);
-            if (existResource) throw new NotFoundException("El recurso no se encontro en el sistema.");
+            if (!existResource) throw new NotFoundException("El recurso no se encontro en el sistema.");
 
             if (startTime >= endTime) throw new ConflictException("las fechas no son validas.");
 
             var existConflict = await _context.Reservations.AsNoTracking()
+                .Where(r => r.ResourceId == resourceId 
+                && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
+                && (startTime.ToUniversalTime() < r.EndDateTime && endTime.ToUniversalTime() > r.StartDateTime))
                 .Select(reservation => new ReservationDto
                 {
                     Id = reservation.Id,
@@ -139,15 +154,17 @@ namespace ReservationManagementApi_06.Application
                     EndDateTime = reservation.EndDateTime,
                     TotalPrice = reservation.TotalPrice,
 
-                }).Where(r => r.ResourceId == resourceId
-                && (startTime.ToUniversalTime() < r.EndDateTime && endTime.ToUniversalTime() > r.StartDateTime)).ToListAsync();
+                })
+                .ToListAsync();
+
+            var resource = await _context.Resources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == resourceId);
 
             if (existConflict.Any())
             {
                 return new AvailabilityDto
                 {
                     ResourceId = resourceId,
-                    ResourceName = "",
+                    ResourceName = resource!.Name,
                     StartDateTime = startTime,
                     EndDateTime = endTime,
                     IsAvailable = false,
@@ -157,7 +174,7 @@ namespace ReservationManagementApi_06.Application
             return new AvailabilityDto
             {
                 ResourceId = resourceId,
-                ResourceName = "",
+                ResourceName = resource!.Name,
                 StartDateTime = startTime,
                 EndDateTime = endTime,
                 IsAvailable = true,
