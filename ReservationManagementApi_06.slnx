@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="ReservationManagementApi_06.Tests/ReservationManagementApi_06.Tests.csproj" Id="daa96752-f4e4-4701-a8dc-4ac1fb51401b" />
   <Project Path="ReservationManagementApi_06/ReservationManagementApi_06.csproj" />
 </Solution>
