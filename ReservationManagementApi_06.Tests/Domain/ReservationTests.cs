@@ -40,11 +40,9 @@ namespace ReservationManagementApi_06.Tests.Domain
             // Arrange
             var customerId = Guid.NewGuid();
             var resourceId = Guid.NewGuid();
-            var startTime = DateTimeOffset.Now;
-            var endTime = DateTimeOffset.Now;
+            var startTime = DateTimeOffset.UtcNow.AddHours(2);
+            var endTime = startTime.AddHours(-1);
             decimal totalPrice = 100.22m;
-            startTime = startTime.AddHours(2);
-            endTime = endTime.AddHours(1);
 
             // Act and Assert
 
@@ -105,15 +103,19 @@ namespace ReservationManagementApi_06.Tests.Domain
             // Act and Assert
             Assert.Throws<DomainException>(() => new Reservation(customerId, Guid.Empty, startTime, endTime, totalPrice));
         }
-        [Fact]
-        public void Constructor_ShouldThrowDomainException_WhenTotalPriceIsZeroOrNegative()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-100.22)]
+        public void Constructor_ShouldThrowDomainException_WhenTotalPriceIsZeroOrNegative(double totalPriceInput)
         {
-            //Arrange
+            // Arrange
             var customerId = Guid.NewGuid();
             var resourceId = Guid.NewGuid();
             var startTime = DateTimeOffset.UtcNow.AddHours(1);
             var endTime = startTime.AddHours(1);
-            decimal totalPrice = -100.22m;
+
+            // Convertimos el double a decimal aquí adentro
+            decimal totalPrice = (decimal)totalPriceInput;
 
             // Act and Assert
             Assert.Throws<DomainException>(() => new Reservation(customerId, resourceId, startTime, endTime, totalPrice));
@@ -133,7 +135,7 @@ namespace ReservationManagementApi_06.Tests.Domain
         [Fact]
         public void Complete_ShouldChangeStatusToCompleted_WhenReservationIsConfirmed()
         {
-            /// Arrange
+            // Arrange
             var reservation = CreatePendingReservation();
             reservation.Confirm();
             // Act
