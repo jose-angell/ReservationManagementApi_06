@@ -74,7 +74,7 @@ namespace ReservationManagementApi_06.Domain
             {
                 throw new DomainException("Capacity must be greater than zero.");
             }
-            if (hourlyRate < 0)
+            if (hourlyRate <= 0)
             {
                 throw new DomainException("Hourly rate cannot be negative.");
             }
