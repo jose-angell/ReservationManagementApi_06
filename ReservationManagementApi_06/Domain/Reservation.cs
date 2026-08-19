@@ -20,6 +20,7 @@ namespace ReservationManagementApi_06.Domain
 
         public Reservation(Guid customerId, Guid resourceId, DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
         {
+            ValidateIdEmpty(customerId, resourceId);
             ValidateDates(startDateTime, endDateTime);
             ValidateTotalPrice(totalPrice);
 
@@ -76,6 +77,17 @@ namespace ReservationManagementApi_06.Domain
                 throw new DomainException("Only confirmed reservations can be completed.");
             }
             Status = StatusReservation.Completed;
+        }
+        private void ValidateIdEmpty(Guid customerId, Guid resourceId)
+        {
+            if (customerId == Guid.Empty)
+            {
+                throw new DomainException("Customer cannot be null or empty.");
+            }
+            if (resourceId == Guid.Empty)
+            {
+                throw new DomainException("Resource cannot be null or empty.");
+            }
         }
         private void ValidateDates(DateTimeOffset startDateTime, DateTimeOffset endDateTime)
         {
