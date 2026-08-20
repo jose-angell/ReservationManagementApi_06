@@ -1,14 +1,11 @@
 ﻿using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ReservationManagementApi_06.Tests.Domain
 {
     public class ResourceTests
     {
-        private static Resource CreateDefaultResource() 
+        private static Resource CreateDefaultResource()
         {
             return new Resource(
             "Name",
@@ -97,12 +94,50 @@ namespace ReservationManagementApi_06.Tests.Domain
             var newCapacity = 1111;
             var newHourlyRate = 123.34m;
             // Act
-            resource.Update(newName, newDecription,newCapacity,newHourlyRate);
+            resource.Update(newName, newDecription, newCapacity, newHourlyRate);
             // Assert
-            Assert.Equal(resource.Name, newName);
-            Assert.Equal(resource.Description, newDecription);
-            Assert.Equal(resource.Capacity, newCapacity);
-            Assert.Equal(resource.HourlyRate, newHourlyRate);
+            Assert.Equal(newName, resource.Name);
+            Assert.Equal(newDecription, resource.Description);
+            Assert.Equal(newCapacity, resource.Capacity);
+            Assert.Equal(newHourlyRate, resource.HourlyRate);
+        }
+        [Fact]
+        public void Update_ShouldThrowDomainException_WhenNameIsEmpty()
+        {
+            // Arrange
+            var resource = CreateDefaultResource();
+            var newName = " ";
+            var newDecription = "new Descriptcion";
+            var newCapacity = 1111;
+            var newHourlyRate = 123.34m;
+            // Act and Assert
+            Assert.Throws<DomainException>(() =>resource.Update(newName, newDecription, newCapacity, newHourlyRate));
+        }
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Update_ShouldThrowDomainException_WhenCapacityIsZeroOrNegative(int capacityInput)
+        {
+            // Arrange
+            var resource = CreateDefaultResource();
+            var newName = " ";
+            var newDecription = "new Descriptcion";
+            var newHourlyRate = 123.34m;
+            // Act and Assert
+            Assert.Throws<DomainException>(() => resource.Update(newName, newDecription, capacityInput, newHourlyRate));
+        }
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Update_ShouldThrowDomainException_WhenHourlyRateIsZeroOrNegative(decimal hourlyRateInput)
+        {
+            // Arrange
+            var resource = CreateDefaultResource();
+            var newName = " ";
+            var newDecription = "new Descriptcion";
+            var newCapacity = 1111;
+            // Act and Assert
+            Assert.Throws<DomainException>(() => resource.Update(newName, newDecription, newCapacity, hourlyRateInput));
         }
     }
 }
