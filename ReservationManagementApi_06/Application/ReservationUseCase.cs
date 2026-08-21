@@ -28,9 +28,12 @@ namespace ReservationManagementApi_06.Application
 
             if (request.StartDateTime >= request.EndDateTime) throw new ConflictException("las fechas no son validas.");
 
+            var startUtc = request.StartDateTime!.Value.ToUniversalTime();
+            var endUtc = request.EndDateTime!.Value.ToUniversalTime();
+
             var existConflict = await _context.Reservations
                 .AnyAsync(r => r.ResourceId == request.ResourceId && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
-                && (request.StartDateTime!.Value.ToUniversalTime() < r.EndDateTime && request.EndDateTime!.Value.ToUniversalTime() > r.StartDateTime));
+                && (startUtc < r.EndDateTime && endUtc > r.StartDateTime));
             if (existConflict) throw new ConflictException("Existe un conflicto entre los horarios seleccionados.");
 
             var totalPrice = CalculateTotalPrice(request.StartDateTime!.Value, request.EndDateTime!.Value, resource.HourlyRate);
