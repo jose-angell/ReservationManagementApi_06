@@ -20,7 +20,9 @@ namespace ReservationManagementApi_06.Application
         }
         public async Task<ReservationDto> Create(CreateReservation request)
         {
-            var existCustomer = await _context.Customers.AnyAsync(c => c.Id == request.CustomerId);
+            var customerId = request.CustomerId!.Value;
+
+            var existCustomer = await _context.Customers.AnyAsync(c => c.Id == customerId);
             if (!existCustomer) throw new NotFoundException("El cliente no se encontro en el sistema.");
 
             var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId && r.IsActive == true);
@@ -28,11 +30,12 @@ namespace ReservationManagementApi_06.Application
 
             if (request.StartDateTime >= request.EndDateTime) throw new ConflictException("las fechas no son validas.");
 
+            var resourceId = request.ResourceId!.Value;
             var startUtc = request.StartDateTime!.Value.ToUniversalTime();
             var endUtc = request.EndDateTime!.Value.ToUniversalTime();
 
             var existConflict = await _context.Reservations
-                .AnyAsync(r => r.ResourceId == request.ResourceId && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
+                .AnyAsync(r => r.ResourceId == resourceId && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
                 && (startUtc < r.EndDateTime && endUtc > r.StartDateTime));
             if (existConflict) throw new ConflictException("Existe un conflicto entre los horarios seleccionados.");
 
@@ -179,7 +182,7 @@ namespace ReservationManagementApi_06.Application
 
             await _context.SaveChangesAsync();
         }
-        private decimal CalculateTotalPrice(DateTimeOffset startTime, DateTimeOffset endTime, decimal hourlyRate)
+        private decimal CalculateTotalPrice(DateTime startTime, DateTime endTime, decimal hourlyRate)
         {
             // 1. Restamos las fechas. Esto devuelve un TimeSpan.
             TimeSpan duration = endTime - startTime;

@@ -24,7 +24,7 @@ namespace ReservationManagementApi_06.Tests.Application
 
             var useCase = new ReservationUseCase(context);
 
-            var startTime = DateTimeOffset.UtcNow.AddHours(1);
+            var startTime = DateTime.UtcNow.AddHours(1);
             var endTime = startTime.AddHours(2);
 
             var request = new CreateReservation

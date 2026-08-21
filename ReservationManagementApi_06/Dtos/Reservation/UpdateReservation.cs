@@ -8,9 +8,9 @@ namespace ReservationManagementApi_06.Dtos.Reservation
         public Guid? ResourceId { get; set; }
 
         [Required(ErrorMessage = "La fecha y horario de inicio es obligatorio.")]
-        public DateTimeOffset? StartDateTime { get; set; }
+        public DateTime? StartDateTime { get; set; }
 
         [Required(ErrorMessage = "La fecha y horario de fin es obligatorio.")]
-        public DateTimeOffset? EndDateTime { get; set; }
+        public DateTime? EndDateTime { get; set; }
     }
 }

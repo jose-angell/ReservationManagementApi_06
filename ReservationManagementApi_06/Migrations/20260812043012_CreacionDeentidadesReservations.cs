@@ -18,7 +18,7 @@ namespace ReservationManagementApi_06.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     FullName = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
                     Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false, defaultValueSql: "now()")
+                    CreatedAt = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "now()")
                 },
                 constraints: table =>
                 {
@@ -48,11 +48,11 @@ namespace ReservationManagementApi_06.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     ResourceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StartDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    EndDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    StartDateTime = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    EndDateTime = table.Column<DateTime>(type: "timestamp", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     total_price = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp", nullable: false)
                 },
                 constraints: table =>
                 {

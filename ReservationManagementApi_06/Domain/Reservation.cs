@@ -7,18 +7,18 @@ namespace ReservationManagementApi_06.Domain
         public Guid Id { get; private set; }
         public Guid CustomerId { get; private set; }
         public Guid ResourceId { get; private set; }
-        public DateTimeOffset StartDateTime { get; private set; }
-        public DateTimeOffset EndDateTime { get; private set; }
+        public DateTime StartDateTime { get; private set; }
+        public DateTime EndDateTime { get; private set; }
         public StatusReservation Status { get; private set; }
         public decimal TotalPrice { get; private set; }
-        public DateTimeOffset CreatedAt { get; private set; }
+        public DateTime CreatedAt { get; private set; }
 
         public Customer Customer { get; private set; } = null!;
         public Resource Resource { get; private set; } = null!;
 
         private Reservation() { }
 
-        public Reservation(Guid customerId, Guid resourceId, DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
+        public Reservation(Guid customerId, Guid resourceId, DateTime startDateTime, DateTime endDateTime, decimal totalPrice)
         {
             ValidateIdEmpty(customerId, resourceId);
             ValidateDates(startDateTime, endDateTime);
@@ -31,9 +31,9 @@ namespace ReservationManagementApi_06.Domain
             EndDateTime = endDateTime.ToUniversalTime();
             Status = StatusReservation.Pending;
             TotalPrice = totalPrice;
-            CreatedAt = DateTimeOffset.Now.ToUniversalTime();
+            CreatedAt = DateTime.UtcNow;
         }
-        public void Update(Guid resourceId, DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
+        public void Update(Guid resourceId, DateTime startDateTime, DateTime endDateTime, decimal totalPrice)
         {
             if (Status != StatusReservation.Pending) throw new DomainException("Solo las reservas penditentes pueden ser editadas");
             ValidateDates(startDateTime, endDateTime);
@@ -43,7 +43,7 @@ namespace ReservationManagementApi_06.Domain
             EndDateTime = endDateTime.ToUniversalTime();
             TotalPrice = totalPrice;
         }
-        public void UpdateDates(DateTimeOffset startDateTime, DateTimeOffset endDateTime, decimal totalPrice)
+        public void UpdateDates(DateTime startDateTime, DateTime endDateTime, decimal totalPrice)
         {
             ValidateDates(startDateTime, endDateTime);
             StartDateTime = startDateTime.ToUniversalTime();
@@ -89,14 +89,14 @@ namespace ReservationManagementApi_06.Domain
                 throw new DomainException("Resource cannot be null or empty.");
             }
         }
-        private void ValidateDates(DateTimeOffset startDateTime, DateTimeOffset endDateTime)
+        private void ValidateDates(DateTime startDateTime, DateTime endDateTime)
         {
             if (startDateTime >= endDateTime)
             {
                 throw new DomainException("Start date and time must be before end date and time.");
             }
 
-            if (startDateTime < DateTimeOffset.Now.ToUniversalTime())
+            if (startDateTime < DateTime.UtcNow)
             {
                 throw new DomainException("la fecha no puede estar en el pasado.");
             }

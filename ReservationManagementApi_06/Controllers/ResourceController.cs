@@ -61,14 +61,14 @@ namespace ReservationManagementApi_06.Controllers
             return Ok(result);
         }
         [HttpGet("{resourceId:guid}/availability")]
-        public async Task<IActionResult> Availability([FromRoute] Guid resourceId, [FromQuery] DateTimeOffset startDateTime, [FromQuery] DateTimeOffset endDateTime)
+        public async Task<IActionResult> Availability([FromRoute] Guid resourceId, [FromQuery] DateTime startDateTime, [FromQuery] DateTime endDateTime)
         {
             if (resourceId == Guid.Empty) return BadRequest("El id es invalido.");
             var result = await _useCase.Availability(resourceId, startDateTime, endDateTime);
             return Ok(result);
         }
         [HttpGet("availability")]
-        public async Task<IActionResult> AvailabilityRangeDates( [FromQuery] DateTimeOffset startDateTime, [FromQuery] DateTimeOffset endDateTime)
+        public async Task<IActionResult> AvailabilityRangeDates( [FromQuery] DateTime startDateTime, [FromQuery] DateTime endDateTime)
         {
             var result = await _useCase.GetAvailableResources(startDateTime, endDateTime);
             return Ok(result);

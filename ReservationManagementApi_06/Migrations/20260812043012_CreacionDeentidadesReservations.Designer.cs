@@ -31,9 +31,9 @@ namespace ReservationManagementApi_06.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamptz")
+                        .HasColumnType("timestamp")
                         .HasDefaultValueSql("now()");
 
                     b.Property<string>("Email")
@@ -60,20 +60,20 @@ namespace ReservationManagementApi_06.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("EndDateTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("EndDateTime")
+                        .HasColumnType("timestamp");
 
                     b.Property<Guid>("ResourceId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("StartDateTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("StartDateTime")
+                        .HasColumnType("timestamp");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");

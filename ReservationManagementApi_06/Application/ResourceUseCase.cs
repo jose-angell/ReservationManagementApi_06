@@ -132,7 +132,7 @@ namespace ReservationManagementApi_06.Application
                 .Take(pageSize)
                 .ToListAsync();
         }
-        public async Task<AvailabilityDto> Availability(Guid resourceId, DateTimeOffset startTime, DateTimeOffset endTime)
+        public async Task<AvailabilityDto> Availability(Guid resourceId, DateTime startTime, DateTime endTime)
         {
             var existResource = await _context.Resources.AnyAsync(r => r.Id == resourceId && r.IsActive == true);
             if (!existResource) throw new NotFoundException("El recurso no se encontro en el sistema.");
@@ -142,7 +142,7 @@ namespace ReservationManagementApi_06.Application
             var existConflict = await _context.Reservations.AsNoTracking()
                 .Where(r => r.ResourceId == resourceId 
                 && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
-                && (startTime.ToUniversalTime() < r.EndDateTime && endTime.ToUniversalTime() > r.StartDateTime))
+                && (startTime < r.EndDateTime && endTime > r.StartDateTime))
                 .Select(reservation => new ReservationDto
                 {
                     Id = reservation.Id,
@@ -181,7 +181,7 @@ namespace ReservationManagementApi_06.Application
                 conflictingReservations = existConflict
             };
         }
-        public async Task<IEnumerable<ResourceDto>> GetAvailableResources(DateTimeOffset startTime, DateTimeOffset endTime)
+        public async Task<IEnumerable<ResourceDto>> GetAvailableResources(DateTime startTime, DateTime endTime)
         {
             if (startTime >= endTime) throw new ConflictException("las fechas no son validas.");
 

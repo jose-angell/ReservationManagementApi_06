@@ -7,7 +7,7 @@ namespace ReservationManagementApi_06.Tests.Domain
     {
         private static Reservation CreatePendingReservation()
         {
-            var startTime = DateTimeOffset.UtcNow.AddHours(1);
+            var startTime = DateTime.UtcNow.AddHours(1);
             var endTime = startTime.AddHours(1);
 
             return new Reservation(
@@ -23,7 +23,7 @@ namespace ReservationManagementApi_06.Tests.Domain
             // Arrange
             var customerId = Guid.NewGuid();
             var resourceId = Guid.NewGuid();
-            var startTime = DateTimeOffset.UtcNow.AddHours(1);
+            var startTime = DateTime.UtcNow.AddHours(1);
             var endTime = startTime.AddHours(1);
             decimal totalPrice = 100.22m;
 
@@ -40,7 +40,7 @@ namespace ReservationManagementApi_06.Tests.Domain
             // Arrange
             var customerId = Guid.NewGuid();
             var resourceId = Guid.NewGuid();
-            var startTime = DateTimeOffset.UtcNow.AddHours(2);
+            var startTime = DateTime.UtcNow.AddHours(2);
             var endTime = startTime.AddHours(-1);
             decimal totalPrice = 100.22m;
 
@@ -84,7 +84,7 @@ namespace ReservationManagementApi_06.Tests.Domain
         {
             //Arrange
             var resourceId = Guid.NewGuid();
-            var startTime = DateTimeOffset.UtcNow.AddHours(1);
+            var startTime = DateTime.UtcNow.AddHours(1);
             var endTime = startTime.AddHours(1);
             decimal totalPrice = 100.22m;
 
@@ -96,7 +96,7 @@ namespace ReservationManagementApi_06.Tests.Domain
         {
             //Arrange
             var customerId = Guid.NewGuid();
-            var startTime = DateTimeOffset.UtcNow.AddHours(1);
+            var startTime = DateTime.UtcNow.AddHours(1);
             var endTime = startTime.AddHours(1);
             decimal totalPrice = 100.22m;
 
@@ -111,7 +111,7 @@ namespace ReservationManagementApi_06.Tests.Domain
             // Arrange
             var customerId = Guid.NewGuid();
             var resourceId = Guid.NewGuid();
-            var startTime = DateTimeOffset.UtcNow.AddHours(1);
+            var startTime = DateTime.UtcNow.AddHours(1);
             var endTime = startTime.AddHours(1);
 
             // Convertimos el double a decimal aquí adentro

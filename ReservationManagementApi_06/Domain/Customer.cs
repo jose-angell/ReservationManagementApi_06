@@ -7,7 +7,7 @@ namespace ReservationManagementApi_06.Domain
         public Guid Id { get; private set; }
         public string FullName { get; private set; }
         public string Email { get; private set; }
-        public DateTimeOffset CreatedAt { get; private set; }
+        public DateTime CreatedAt { get; private set; }
 
         public ICollection<Reservation> Reservations { get; } = new List<Reservation>();
 
@@ -15,7 +15,7 @@ namespace ReservationManagementApi_06.Domain
         {
             FullName = string.Empty;
             Email = string.Empty;
-            CreatedAt = DateTimeOffset.Now.ToUniversalTime();
+            CreatedAt = DateTime.UtcNow;
         }
         public Customer(string fullName, string email)
         {
@@ -23,7 +23,7 @@ namespace ReservationManagementApi_06.Domain
             Id = Guid.NewGuid();
             FullName = fullName;
             Email = email;
-            CreatedAt = DateTimeOffset.Now.ToUniversalTime();
+            CreatedAt = DateTime.UtcNow;
         }
         public void Update(string fullName, string email)
         {
