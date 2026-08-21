@@ -71,9 +71,13 @@ namespace ReservationManagementApi_06.Application
 
             if (request.StartDateTime >= request.EndDateTime) throw new ConflictException("las fechas no son validas.");
 
+            var resourceId = request.ResourceId!.Value;
+            var startUtc = request.StartDateTime!.Value.ToUniversalTime();
+            var endUtc = request.EndDateTime!.Value.ToUniversalTime();
+
             var existConflict = await _context.Reservations
-                .AnyAsync(r => r.ResourceId == request.ResourceId && r.Id != id && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
-                && (request.StartDateTime!.Value.ToUniversalTime() < r.EndDateTime && request.EndDateTime!.Value.ToUniversalTime() > r.StartDateTime));
+                .AnyAsync(r => r.ResourceId == resourceId && r.Id != id && (r.Status == StatusReservation.Pending || r.Status == StatusReservation.Confirmed)
+                && (startUtc < r.EndDateTime && endUtc > r.StartDateTime));
             if (existConflict) throw new ConflictException("Existe un conflicto entre los horarios seleccionados.");
 
             var totalPrice = CalculateTotalPrice(request.StartDateTime!.Value, request.EndDateTime!.Value, resource.HourlyRate);
@@ -100,6 +104,9 @@ namespace ReservationManagementApi_06.Application
         }
         public async Task<IEnumerable<ReservationDto>> GetAll(ReservationQuery paramQuery)
         {
+            var fromdate = paramQuery.FromDate!.Value.ToUniversalTime();
+            var toDate = paramQuery.ToDate!.Value.ToUniversalTime();
+
             IQueryable<Reservation> query = _context.Reservations.AsNoTracking();
 
             if (paramQuery.CustomerId.HasValue)
@@ -116,11 +123,11 @@ namespace ReservationManagementApi_06.Application
             }
             if (paramQuery.FromDate.HasValue)
             {
-                query = query.Where(r => r.EndDateTime > paramQuery.FromDate!.Value.ToUniversalTime());
+                query = query.Where(r => r.EndDateTime > fromdate);
             }
             if (paramQuery.ToDate.HasValue)
             {
-                query = query.Where(r => r.StartDateTime < paramQuery.ToDate!.Value.ToUniversalTime());
+                query = query.Where(r => r.StartDateTime < toDate);
             }
 
             query = paramQuery.SortBy?.ToLower() switch
