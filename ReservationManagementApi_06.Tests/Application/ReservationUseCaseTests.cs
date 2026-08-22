@@ -395,13 +395,13 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
-            exitingReservation.Confirm();
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            existingReservation.Confirm();
 
             context.Customers.Add(customer);
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -417,7 +417,7 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
+            Func<Task> act = () => useCase.Update(existingReservation.Id, request);
 
             // Assert
             await Assert.ThrowsAsync<ConflictException>(act);
@@ -434,13 +434,13 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
-            exitingReservation.Cancel();
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            existingReservation.Cancel();
 
             context.Customers.Add(customer);
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -456,7 +456,7 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
+            Func<Task> act = () => useCase.Update(existingReservation.Id, request);
 
             // Assert
             await Assert.ThrowsAsync<ConflictException>(act);
@@ -473,14 +473,14 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
-            exitingReservation.Confirm();
-            exitingReservation.Complete();
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            existingReservation.Confirm();
+            existingReservation.Complete();
 
             context.Customers.Add(customer);
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -496,7 +496,7 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
+            Func<Task> act = () => useCase.Update(existingReservation.Id, request);
 
             // Assert
             await Assert.ThrowsAsync<ConflictException>(act);
@@ -512,11 +512,11 @@ namespace ReservationManagementApi_06.Tests.Application
 
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
 
             context.Customers.Add(customer);
             context.Resources.Add(resource);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -532,7 +532,7 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
+            Func<Task> act = () => useCase.Update(existingReservation.Id, request);
 
             // Assert
             await Assert.ThrowsAsync<NotFoundException>(act);
@@ -549,13 +549,13 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
             newResource.Deactivate();
 
             context.Customers.Add(customer);
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -571,7 +571,7 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
+            Func<Task> act = () => useCase.Update(existingReservation.Id, request);
 
             // Assert
             await Assert.ThrowsAsync<ConflictException>(act);
@@ -588,14 +588,14 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
             var oldReservation = new Reservation(customer.Id, newResource.Id, startTime, endTime, 100m);
 
             context.Customers.Add(customer);
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
             context.Reservations.Add(oldReservation);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -611,7 +611,7 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
+            Func<Task> act = () => useCase.Update(existingReservation.Id, request);
 
             // Assert
             await Assert.ThrowsAsync<ConflictException>(act);
@@ -628,7 +628,7 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
             var oldReservation = new Reservation(customer.Id, newResource.Id, startTime, endTime, 100m);
             oldReservation.Confirm();
 
@@ -636,7 +636,7 @@ namespace ReservationManagementApi_06.Tests.Application
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
             context.Reservations.Add(oldReservation);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -652,7 +652,7 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
+            Func<Task> act = () => useCase.Update(existingReservation.Id, request);
 
             // Assert
             await Assert.ThrowsAsync<ConflictException>(act);
@@ -669,7 +669,7 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
             var oldReservation = new Reservation(customer.Id, newResource.Id, startTime, endTime, 100m);
             oldReservation.Cancel();
 
@@ -677,7 +677,7 @@ namespace ReservationManagementApi_06.Tests.Application
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
             context.Reservations.Add(oldReservation);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -693,15 +693,15 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            await useCase.Update(exitingReservation.Id, request);
+            await useCase.Update(existingReservation.Id, request);
 
             // Assert
-            Assert.Equal(customer.Id, exitingReservation.CustomerId);
-            Assert.Equal(newResource.Id, exitingReservation.ResourceId);
-            Assert.Equal(StatusReservation.Pending, exitingReservation.Status);
-            Assert.Equal(200m, exitingReservation.TotalPrice);
+            Assert.Equal(customer.Id, existingReservation.CustomerId);
+            Assert.Equal(newResource.Id, existingReservation.ResourceId);
+            Assert.Equal(StatusReservation.Pending, existingReservation.Status);
+            Assert.Equal(200m, existingReservation.TotalPrice);
 
-            var reservationInDb = await context.Reservations.FindAsync(exitingReservation.Id);
+            var reservationInDb = await context.Reservations.FindAsync(existingReservation.Id);
             Assert.NotNull(reservationInDb);
         }
         [Fact]
@@ -716,7 +716,7 @@ namespace ReservationManagementApi_06.Tests.Application
             var customer = new Customer("José Gallardo", "jose@test.com");
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
             var newResource = new Resource("Sala B", "Sala de juntas B", 10, 100m);
-            var exitingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
             var oldReservation = new Reservation(customer.Id, newResource.Id, startTime, endTime, 100m);
             oldReservation.Confirm();
             oldReservation.Complete();
@@ -725,7 +725,7 @@ namespace ReservationManagementApi_06.Tests.Application
             context.Resources.Add(resource);
             context.Resources.Add(newResource);
             context.Reservations.Add(oldReservation);
-            context.Reservations.Add(exitingReservation);
+            context.Reservations.Add(existingReservation);
             await context.SaveChangesAsync();
 
             var useCase = new ReservationUseCase(context);
@@ -741,16 +741,153 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            await useCase.Update(exitingReservation.Id, request);
+            await useCase.Update(existingReservation.Id, request);
 
             // Assert
-            Assert.Equal(customer.Id, exitingReservation.CustomerId);
-            Assert.Equal(newResource.Id, exitingReservation.ResourceId);
-            Assert.Equal(StatusReservation.Pending, exitingReservation.Status);
-            Assert.Equal(200m, exitingReservation.TotalPrice);
+            Assert.Equal(customer.Id, existingReservation.CustomerId);
+            Assert.Equal(newResource.Id, existingReservation.ResourceId);
+            Assert.Equal(StatusReservation.Pending, existingReservation.Status);
+            Assert.Equal(200m, existingReservation.TotalPrice);
 
-            var reservationInDb = await context.Reservations.FindAsync(exitingReservation.Id);
+            var reservationInDb = await context.Reservations.FindAsync(existingReservation.Id);
             Assert.NotNull(reservationInDb);
+        }
+        [Fact]
+        public async Task Delete_ShouldDeleteReservation_WhenReservationIsPending()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync();
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            await useCase.Delete(existingReservation.Id);
+
+            // Assert
+            var reservationInDb = await context.Reservations.FindAsync(existingReservation.Id);
+            Assert.Null(reservationInDb);
+        }
+        [Fact]
+        public async Task Delete_ShouldThrowNotFoundException_WhenReservationDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Delete(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task Delete_ShouldThrowConflictException_WhenReservationIsConfirmed()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            
+            existingReservation.Confirm();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync();
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Delete(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<ConflictException>(act);
+        }
+        [Fact]
+        public async Task Delete_ShouldThrowConflictException_WhenReservationIsCancelled()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            
+            existingReservation.Cancel();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync();
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Delete(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<ConflictException>(act);
+        }
+        [Fact]
+        public async Task Delete_ShouldThrowConflictException_WhenReservationIsCompleted()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+           
+            existingReservation.Confirm();
+            existingReservation.Complete();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync();
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Delete(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<ConflictException>(act);
         }
     }
 }
