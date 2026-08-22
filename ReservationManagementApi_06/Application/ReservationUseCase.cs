@@ -67,8 +67,9 @@ namespace ReservationManagementApi_06.Application
 
             if(reservation.Status != StatusReservation.Pending ) throw new ConflictException("Solo las reservas penditentes pueden ser editadas");
 
-            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId && r.IsActive == true);
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId );
             if (resource == null) throw new NotFoundException("El recurso no se encontro en el sistema.");
+            if (!resource.IsActive) throw new ConflictException("El rescurso esta inactivo.");
 
             if (request.StartDateTime >= request.EndDateTime) throw new ConflictException("las fechas no son validas.");
 
