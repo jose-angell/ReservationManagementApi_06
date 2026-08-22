@@ -338,9 +338,9 @@ namespace ReservationManagementApi_06.Tests.Application
 
             // Assert
             Assert.Equal(customer.Id, pendingReservation.CustomerId);
-            Assert.Equal(resource.Id, pendingReservation.ResourceId);
+            Assert.Equal(newResource.Id, pendingReservation.ResourceId);
             Assert.Equal(StatusReservation.Pending, pendingReservation.Status);
-            Assert.Equal(200m, pendingReservation.TotalPrice);
+            Assert.Equal(300m, pendingReservation.TotalPrice);
 
             var reservationInDb = await context.Reservations.FindAsync(pendingReservation.Id);
             Assert.NotNull(reservationInDb);
@@ -574,7 +574,7 @@ namespace ReservationManagementApi_06.Tests.Application
             Func<Task> act = () => useCase.Update(exitingReservation.Id, request);
 
             // Assert
-            await Assert.ThrowsAsync<NotFoundException>(act);
+            await Assert.ThrowsAsync<ConflictException>(act);
         }
         [Fact]
         public async Task Update_ShouldThrowConflictException_WhenUpdatedDatesOverlapPendingReservation()
