@@ -25,8 +25,9 @@ namespace ReservationManagementApi_06.Application
             var existCustomer = await _context.Customers.AnyAsync(c => c.Id == customerId);
             if (!existCustomer) throw new NotFoundException("El cliente no se encontro en el sistema.");
 
-            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId && r.IsActive == true);
+            var resource = await _context.Resources.FirstOrDefaultAsync(r => r.Id == request.ResourceId);
             if (resource == null) throw new NotFoundException("El recurso no se encontro en el sistema.");
+            if (!resource.IsActive) throw new ConflictException("El rescurso esta inactivo.");
 
             if (request.StartDateTime >= request.EndDateTime) throw new ConflictException("las fechas no son validas.");
 
