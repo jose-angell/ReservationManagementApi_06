@@ -1,4 +1,5 @@
-﻿using ReservationManagementApi_06.Application;
+﻿using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
+using ReservationManagementApi_06.Application;
 using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Reservation;
 using ReservationManagementApi_06.Exceptions;
@@ -1226,6 +1227,310 @@ namespace ReservationManagementApi_06.Tests.Application
 
             // Assert
             await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Fact]
+        public async Task GetById_ShouldReturnReservation_WhenReservationExists()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var reservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 240m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(reservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            var result = await useCase.GetById(reservation.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(reservation.Id, result.Id);
+            Assert.Equal(customer.Id, result.CustomerId);
+            Assert.Equal(resource.Id, result.ResourceId);
+            Assert.Equal(StatusReservation.Pending, result.Status);
+            Assert.Equal(240m, result.TotalPrice);
+        }
+        [Fact]
+        public async Task GetById_ShouldThrowNotFoundException_WhenReservationDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.GetById(Guid.NewGuid());
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task GetAll_ShouldReturnAllReservations_WhenNoFiltersAreProvided()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            var reservationOne = new Reservation(customer.Id, resource.Id, startTime, endTime, 240m);
+            var reservationTwo = new Reservation(customer.Id, resource.Id, startTime.AddHours(3), endTime.AddHours(3), 240m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(reservationOne);
+            context.Reservations.Add(reservationTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            var request = new ReservationQuery
+            {
+                Page = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count());
+        }
+        [Fact]
+        public async Task GetAll_ShouldFilterReservations_ByStatus()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            var pendingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 240m);
+
+            var confirmedReservation = new Reservation(
+                customer.Id,
+                resource.Id,
+                startTime.AddHours(3),
+                endTime.AddHours(3),
+                240m);
+
+            confirmedReservation.Confirm();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(pendingReservation);
+            context.Reservations.Add(confirmedReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            var request = new ReservationQuery
+            {
+                Status = StatusReservation.Confirmed,
+                Page = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+            
+            // Assert
+            var item = Assert.Single(result);
+            Assert.Equal(confirmedReservation.Id, item.Id);
+            Assert.Equal(StatusReservation.Confirmed, item.Status);
+        }
+        [Fact]
+        public async Task GetAll_ShouldReturnReservationsThatOverlapDateRange()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var baseTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            var reservationInsideRange = new Reservation(
+                customer.Id,
+                resource.Id,
+                baseTime,
+                baseTime.AddHours(2),
+                240m);
+
+            var reservationOutsideRange = new Reservation(
+                customer.Id,
+                resource.Id,
+                baseTime.AddHours(5),
+                baseTime.AddHours(7),
+                240m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(reservationInsideRange);
+            context.Reservations.Add(reservationOutsideRange);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            var request = new ReservationQuery
+            {
+                FromDate = baseTime.AddHours(1),
+                ToDate = baseTime.AddHours(3),
+                Page = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            var item = Assert.Single(result);
+            Assert.Equal(reservationInsideRange.Id, item.Id);
+        }
+        [Fact]
+        public async Task GetAll_ShouldFilterReservations_ByCustomerId()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customerOne = new Customer("José Gallardo", "jose@test.com");
+            var customerTwo = new Customer("José Gallardo2", "jose2@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            var reservationOne = new Reservation(customerOne.Id, resource.Id, startTime, endTime, 240m);
+            var reservationTwo = new Reservation(customerTwo.Id, resource.Id, startTime.AddHours(3), endTime.AddHours(3), 240m);
+
+            context.Customers.Add(customerOne);
+            context.Customers.Add(customerTwo);
+            context.Resources.Add(resource);
+            context.Reservations.Add(reservationOne);
+            context.Reservations.Add(reservationTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            var request = new ReservationQuery
+            {
+                CustomerId = customerOne.Id,
+                Page = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            var item = Assert.Single(result);
+            Assert.Equal(reservationOne.Id, item.Id);
+        }
+        [Fact]
+        public async Task GetAll_ShouldFilterReservations_ByResourceId()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resourceOne = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var resourceTwo = new Resource("Sala B", "Sala de juntasB", 15, 120m);
+
+            var reservationOne = new Reservation(customer.Id, resourceOne.Id, startTime, endTime, 240m);
+            var reservationTwo = new Reservation(customer.Id, resourceTwo.Id, startTime.AddHours(3), endTime.AddHours(3), 240m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resourceOne);
+            context.Resources.Add(resourceTwo);
+            context.Reservations.Add(reservationOne);
+            context.Reservations.Add(reservationTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            var request = new ReservationQuery
+            {
+                ResourceId = resourceOne.Id,
+                Page = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            var item = Assert.Single(result);
+            Assert.Equal(reservationOne.Id, item.Id);
+        }
+        [Fact]
+        public async Task GetAll_ShouldApplyPagination()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var baseTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            var reservationOne = new Reservation(customer.Id, resource.Id, baseTime, baseTime.AddHours(1), 120m);
+            var reservationTwo = new Reservation(customer.Id, resource.Id, baseTime.AddHours(2), baseTime.AddHours(3), 120m);
+            var reservationThree = new Reservation(customer.Id, resource.Id, baseTime.AddHours(4), baseTime.AddHours(5), 120m);
+            var reservationFour = new Reservation(customer.Id, resource.Id, baseTime.AddHours(6), baseTime.AddHours(7), 120m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(reservationOne);
+            context.Reservations.Add(reservationTwo);
+            context.Reservations.Add(reservationThree);
+            context.Reservations.Add(reservationFour);
+
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            var request = new ReservationQuery
+            {
+                Page = 2,
+                PageSize = 2
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            var items = result.ToList();
+
+            Assert.Equal(2, items.Count);
+            Assert.Equal(reservationThree.Id, items[0].Id);
+            Assert.Equal(reservationFour.Id, items[1].Id);
         }
     }
 }

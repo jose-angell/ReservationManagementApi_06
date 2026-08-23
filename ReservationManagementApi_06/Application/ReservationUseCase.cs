@@ -106,9 +106,6 @@ namespace ReservationManagementApi_06.Application
         }
         public async Task<IEnumerable<ReservationDto>> GetAll(ReservationQuery paramQuery)
         {
-            var fromdate = paramQuery.FromDate!.Value.ToUniversalTime();
-            var toDate = paramQuery.ToDate!.Value.ToUniversalTime();
-
             IQueryable<Reservation> query = _context.Reservations.AsNoTracking();
 
             if (paramQuery.CustomerId.HasValue)
@@ -125,10 +122,12 @@ namespace ReservationManagementApi_06.Application
             }
             if (paramQuery.FromDate.HasValue)
             {
+                var fromdate = paramQuery.FromDate!.Value.ToUniversalTime();
                 query = query.Where(r => r.EndDateTime > fromdate);
             }
             if (paramQuery.ToDate.HasValue)
             {
+                var toDate = paramQuery.ToDate!.Value.ToUniversalTime();
                 query = query.Where(r => r.StartDateTime < toDate);
             }
 
