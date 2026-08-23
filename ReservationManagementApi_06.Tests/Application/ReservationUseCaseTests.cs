@@ -889,5 +889,343 @@ namespace ReservationManagementApi_06.Tests.Application
             // Assert
             await Assert.ThrowsAsync<ConflictException>(act);
         }
+        [Fact]
+        public async Task Confirm_ShouldConfirmReservation_WhenReservationIsPending()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            await useCase.Confirm(existingReservation.Id);
+
+            // Assert
+            Assert.Equal(StatusReservation.Confirmed, existingReservation.Status);
+
+            var reservationInDb = await context.Reservations.FindAsync(existingReservation.Id);
+            Assert.NotNull(reservationInDb);
+        }
+        [Fact]
+        public async Task Confirm_ShouldThrowNotFoundException_WhenReservationDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+           
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Confirm(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task Confirm_ShouldThrowDomainException_WhenReservationIsCancelled()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            existingReservation.Cancel();
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Confirm(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Fact]
+        public async Task Confirm_ShouldThrowDomainException_WhenReservationIsCompleted()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            existingReservation.Confirm();
+            existingReservation.Complete();
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Confirm(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Fact]
+        public async Task Cancel_ShouldCancelReservation_WhenReservationIsPending()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            await useCase.Cancel(existingReservation.Id);
+
+            // Assert
+            Assert.Equal(StatusReservation.Cancelled, existingReservation.Status);
+
+            var reservationInDb = await context.Reservations.FindAsync(existingReservation.Id);
+            Assert.NotNull(reservationInDb);
+        }
+        [Fact]
+        public async Task Cancel_ShouldCancelReservation_WhenReservationIsConfirmed()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+            existingReservation.Confirm();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            await useCase.Cancel(existingReservation.Id);
+
+            // Assert
+            Assert.Equal(StatusReservation.Cancelled, existingReservation.Status);
+
+            var reservationInDb = await context.Reservations.FindAsync(existingReservation.Id);
+            Assert.NotNull(reservationInDb);
+        }
+        [Fact]
+        public async Task Cancel_ShouldThrowNotFoundException_WhenReservationDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func < Task > act = () => useCase.Cancel(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task Cancel_ShouldThrowDomainException_WhenReservationIsCompleted()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            existingReservation.Confirm();
+            existingReservation.Complete();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Cancel(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Fact]
+        public async Task Complete_ShouldCompleteReservation_WhenReservationIsConfirmed()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            existingReservation.Confirm();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            await useCase.Complete(existingReservation.Id);
+
+            // Assert
+            Assert.Equal(StatusReservation.Completed, existingReservation.Status);
+
+            var reservationInDb = await context.Reservations.FindAsync(existingReservation.Id);
+            Assert.NotNull(reservationInDb);
+        }
+        [Fact]
+        public async Task Complete_ShouldThrowNotFoundException_WhenReservationDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            existingReservation.Confirm();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Complete(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task Complete_ShouldThrowDomainException_WhenReservationIsPending()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Complete(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Fact]
+        public async Task Complete_ShouldThrowDomainException_WhenReservationIsCancelled()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 100m);
+
+            existingReservation.Cancel();
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(existingReservation);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ReservationUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Complete(existingReservation.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
     }
 }
