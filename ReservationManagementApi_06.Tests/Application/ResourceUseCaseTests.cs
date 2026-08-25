@@ -1,5 +1,7 @@
-﻿using ReservationManagementApi_06.Application;
+﻿using FluentAssertions.Common;
+using ReservationManagementApi_06.Application;
 using ReservationManagementApi_06.Domain;
+using ReservationManagementApi_06.Dtos.Resource;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Tests.TestSupport;
 
@@ -188,7 +190,7 @@ namespace ReservationManagementApi_06.Tests.Application
             var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
 
             var existingReservation = new Reservation(customer.Id, resource.Id, baseTime.AddHours(1), baseTime.AddHours(2), 120m);
-            
+
             context.Customers.Add(customer);
             context.Resources.Add(resource);
 
@@ -412,6 +414,165 @@ namespace ReservationManagementApi_06.Tests.Application
             // Assert
             var item = Assert.Single(result);
             Assert.Equal(resource.Id, item.Id);
+        }
+        [Fact]
+        public async Task Create_ShouldCreateResource_WhenRequestIsValid()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new CreateResource
+            {
+                Name = "test",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            var result = await useCase.Create(request);
+
+            // Assert
+            Assert.Equal(request.Name, result.Name);
+            Assert.Equal(request.Description, result.Description);
+            Assert.Equal(request.Capacity, result.Capacity);
+            Assert.Equal(request.HourlyRate, result.HourlyRate);
+
+            var reservationInDb = await context.Resources.FindAsync(result.Id);
+            Assert.NotNull(reservationInDb);
+        }
+        [Fact]
+        public async Task Create_ShouldThrowConflictException_WhenResourceNameAlreadyExists()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var resource = new Resource("Sala A", "Sala de juntas", 10, 100m);
+
+            context.Resources.Add(resource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new CreateResource
+            {
+                Name = "Sala A",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Create(request);
+
+            await Assert.ThrowsAsync<ConflictException>(act);
+        }
+        [Fact]
+        public async Task Create_ShouldThrowDomainException_WhenNameIsEmpty()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var useCase = new ResourceUseCase(context);
+
+            var request = new CreateResource
+            {
+                Name = "",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Create(request);
+
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Create_ShouldThrowDomainException_WhenCapacityIsZeroOrNegative(int capacityInput)
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new CreateResource
+            {
+                Name = "test",
+                Description = "test",
+                Capacity = capacityInput,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Create(request);
+
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Create_ShouldThrowDomainException_WhenHourlyRateIsZeroOrNegative(decimal hourlyRateInput)
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new CreateResource
+            {
+                Name = "test",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = hourlyRateInput,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Create(request);
+
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Fact]
+        public async Task Update_ShouldUpdateResource_WhenRequestIsValid()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+
+            context.Resources.Add(resource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new CreateResource
+            {
+                Name = "test",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            var result = await useCase.Create(request);
+
+            // Assert
+            Assert.Equal(request.Name, result.Name);
+            Assert.Equal(request.Description, result.Description);
+            Assert.Equal(request.Capacity, result.Capacity);
+            Assert.Equal(request.HourlyRate, result.HourlyRate);
+
+            var reservationInDb = await context.Resources.FindAsync(result.Id);
+            Assert.NotNull(reservationInDb);
         }
     }
 }
