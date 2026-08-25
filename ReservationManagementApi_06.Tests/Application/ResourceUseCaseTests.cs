@@ -4,6 +4,7 @@ using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Resource;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Tests.TestSupport;
+using System.Reflection.PortableExecutable;
 
 namespace ReservationManagementApi_06.Tests.Application
 {
@@ -712,6 +713,155 @@ namespace ReservationManagementApi_06.Tests.Application
             Func<Task> act = () => useCase.Update(existingResource.Id, request);
 
             await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Fact]
+        public async Task Delete_ShouldDeleteResource_WhenResourceHasNoReservations()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(existingResource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            await useCase.Delete(existingResource.Id);
+
+            // Assert
+            var reservationInDb = await context.Resources.FindAsync(existingResource.Id);
+            Assert.Null(reservationInDb);
+        }
+        [Fact]
+        public async Task Delete_ShouldThrowNotFoundException_WhenResourceDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Delete(existingResource.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task Delete_ShouldThrowConflictException_WhenResourceHasReservations()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingReservation = new Reservation(customer.Id, existingResource.Id, startTime, endTime, 100m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(existingResource);
+            context.Reservations.Add(existingReservation);
+
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Delete(existingResource.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<ConflictException>(act);
+        }
+        [Fact]
+        public async Task Deactivate_ShouldDeactivateResource_WhenResourceExists()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(existingResource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            await useCase.Deactivate(existingResource.Id);
+
+            // Assert
+            Assert.False(existingResource.IsActive);
+
+        }
+        [Fact]
+        public async Task Deactivate_ShouldThrowNotFoundException_WhenResourceDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Deactivate(existingResource.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+
+        }
+        [Fact]
+        public async Task Activate_ShouldActivateResource_WhenResourceExists()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(existingResource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            await useCase.Activate(existingResource.Id);
+
+            // Assert
+            Assert.True(existingResource.IsActive);
+
+        }
+        [Fact]
+        public async Task Activate_ShouldThrowNotFoundException_WhenResourceDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.Activate(existingResource.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+
         }
     }
 }
