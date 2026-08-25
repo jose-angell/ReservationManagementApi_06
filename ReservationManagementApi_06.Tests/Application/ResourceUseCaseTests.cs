@@ -545,16 +545,15 @@ namespace ReservationManagementApi_06.Tests.Application
             // Arrange
             using var db = new TestDbContextFactory();
             var context = db.Context;
-            var customer = new Customer("José Gallardo", "jose@test.com");
-            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
 
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
 
-            context.Resources.Add(resource);
+            context.Resources.Add(existingResource);
             await context.SaveChangesAsync();
 
             var useCase = new ResourceUseCase(context);
 
-            var request = new CreateResource
+            var request = new UpdateResource
             {
                 Name = "test",
                 Description = "test",
@@ -563,16 +562,156 @@ namespace ReservationManagementApi_06.Tests.Application
             };
 
             // Act
-            var result = await useCase.Create(request);
+            await useCase.Update(existingResource.Id, request);
 
             // Assert
-            Assert.Equal(request.Name, result.Name);
-            Assert.Equal(request.Description, result.Description);
-            Assert.Equal(request.Capacity, result.Capacity);
-            Assert.Equal(request.HourlyRate, result.HourlyRate);
+            Assert.Equal(existingResource.Name, request.Name);
+            Assert.Equal(existingResource.Description, request.Description);
+            Assert.Equal(existingResource.Capacity, request.Capacity);
+            Assert.Equal(existingResource.HourlyRate, request.HourlyRate);
 
-            var reservationInDb = await context.Resources.FindAsync(result.Id);
+            var reservationInDb = await context.Resources.FindAsync(existingResource.Id);
             Assert.NotNull(reservationInDb);
+        }
+        [Fact]
+        public async Task Update_ShouldThrowNotFoundException_WhenResourceDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new UpdateResource
+            {
+                Name = "test",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Update(existingResource.Id, request);
+
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task Update_ShouldThrowConflictException_WhenResourceNameAlreadyExists()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var existingResource = new Resource("Sala B", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(resource);
+            context.Resources.Add(existingResource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new UpdateResource
+            {
+                Name = "Sala A",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Update(existingResource.Id, request);
+
+            await Assert.ThrowsAsync<ConflictException>(act);
+        }
+        [Fact]
+        public async Task Update_ShouldThrowDomainException_WhenNameIsEmpty()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala B", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(existingResource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new UpdateResource
+            {
+                Name = "",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Update(existingResource.Id, request);
+
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Update_ShouldThrowDomainException_WhenCapacityIsZeroOrNegative(int capacityInput)
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala B", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(existingResource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new UpdateResource
+            {
+                Name = "test",
+                Description = "test",
+                Capacity = capacityInput,
+                HourlyRate = 1.99m,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Update(existingResource.Id, request);
+
+            await Assert.ThrowsAsync<DomainException>(act);
+        }
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Update_ShouldThrowDomainException_WhenHourlyRateIsZeroOrNegative(decimal hourlyRateInput)
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var existingResource = new Resource("Sala B", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(existingResource);
+            await context.SaveChangesAsync();
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new UpdateResource
+            {
+                Name = "test",
+                Description = "test",
+                Capacity = 1,
+                HourlyRate = hourlyRateInput,
+            };
+
+            // Act
+            Func<Task> act = () => useCase.Update(existingResource.Id, request);
+
+            await Assert.ThrowsAsync<DomainException>(act);
         }
     }
 }
