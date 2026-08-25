@@ -1,6 +1,7 @@
 ﻿using FluentAssertions.Common;
 using ReservationManagementApi_06.Application;
 using ReservationManagementApi_06.Domain;
+using ReservationManagementApi_06.Dtos.Reservation;
 using ReservationManagementApi_06.Dtos.Resource;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Tests.TestSupport;
@@ -862,6 +863,216 @@ namespace ReservationManagementApi_06.Tests.Application
             // Assert
             await Assert.ThrowsAsync<NotFoundException>(act);
 
+        }
+        [Fact]
+        public async Task GetById_ShouldReturnResource_WhenResourceExists()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(resource);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            var result = await useCase.GetById(resource.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(resource.Id, result.Id);
+            Assert.Equal(resource.Name, result.Name);
+            Assert.Equal(resource.Description, result.Description);
+            Assert.Equal(resource.Capacity, result.Capacity);
+            Assert.Equal(resource.HourlyRate, result.HourlyRate);
+            Assert.Equal(resource.IsActive, result.IsActive);
+        }
+        [Fact]
+        public async Task GetById_ShouldThrowNotFoundException_WhenResourceDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var useCase = new ResourceUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.GetById(Guid.NewGuid());
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task GetAll_ShouldReturnAllResources_WhenNoFiltersAreProvided()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var resourceOne = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var resourceTwo = new Resource("Sala B", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(resourceOne);
+            context.Resources.Add(resourceTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new ResourceQuery
+            {
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count());
+        }
+        [Fact]
+        public async Task GetAll_ShouldFilterResources_ByName()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var resourceOne = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var resourceTwo = new Resource("Sala B", "Sala de juntas", 15, 120m);
+
+            context.Resources.Add(resourceOne);
+            context.Resources.Add(resourceTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new ResourceQuery
+            {
+                Name = "Sala A",
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.Count());
+        }
+        [Fact]
+        public async Task GetAll_ShouldFilterResources_ByCapacity()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var resourceOne = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var resourceTwo = new Resource("Sala B", "Sala de juntas", 19, 137m);
+
+            context.Resources.Add(resourceOne);
+            context.Resources.Add(resourceTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new ResourceQuery
+            {
+                MaxCapacity = 15,
+                MinCapacity = 10,
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.Count());
+        }
+        [Fact]
+        public async Task GetAll_ShouldFilterResources_ByHourlyRate()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var resourceOne = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var resourceTwo = new Resource("Sala B", "Sala de juntas", 19, 137m);
+
+            context.Resources.Add(resourceOne);
+            context.Resources.Add(resourceTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new ResourceQuery
+            {
+                MaxHourlyRate = 123,
+                MinHourlyRate = 10,
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.Count());
+        }
+        [Fact]
+        public async Task GetAll_ShouldFilterResources_ByIsActive()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var resourceOne = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var resourceTwo = new Resource("Sala B", "Sala de juntas", 19, 137m);
+            resourceTwo.Deactivate();
+            context.Resources.Add(resourceOne);
+            context.Resources.Add(resourceTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new ResourceUseCase(context);
+
+            var request = new ResourceQuery
+            {
+                IsActive = true,
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await useCase.GetAll(request);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.Count());
         }
     }
 }

@@ -112,6 +112,11 @@ namespace ReservationManagementApi_06.Application
             {
                 query = query.Where(r => r.HourlyRate <= paramQuery.MaxHourlyRate.Value);
             }
+            if (paramQuery.IsActive.HasValue)
+            {
+                query = query.Where(r => r.IsActive ==  paramQuery.IsActive.Value);
+            }
+
             int pageSize = paramQuery.PageSize;
             int page = paramQuery.PageNumber;
             if (page < 1) page = 1;
