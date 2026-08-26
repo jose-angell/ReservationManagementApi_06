@@ -1,6 +1,7 @@
 ﻿using ReservationManagementApi_06.Application;
 using ReservationManagementApi_06.Domain;
 using ReservationManagementApi_06.Dtos.Customer;
+using ReservationManagementApi_06.Dtos.Reservation;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Tests.TestSupport;
 
@@ -177,6 +178,77 @@ namespace ReservationManagementApi_06.Tests.Application
             Func<Task> act = () => useCase.Update(customer.Id, request);
 
             await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task GetById_ShouldReturnCustomer_WhenCustomerExists()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var customer = new Customer("test", "test@gmail.com");
+
+            context.Customers.Add(customer);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new CustomerUseCase(context);
+
+            // Act
+            var result = await useCase.GetById(customer.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(customer.Id, result.Id);
+            Assert.Equal(customer.FullName, result.FullName);
+            Assert.Equal(customer.Email, result.Email);
+            Assert.Equal(customer.CreatedAt, result.CreatedAt);
+        }
+        [Fact]
+        public async Task GetById_ShouldThrowNotFoundException_WhenCustomerDoesNotExist()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var customer = new Customer("test", "test@gmail.com");
+
+
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new CustomerUseCase(context);
+
+            // Act
+            Func<Task> act = () => useCase.GetById(customer.Id);
+
+            // Assert
+            await Assert.ThrowsAsync<NotFoundException>(act);
+        }
+        [Fact]
+        public async Task GetAll_ShouldReturnAllCustomers_WhenNoFiltersAreProvided()
+        {
+            // Arrange
+            using var db = new TestDbContextFactory();
+            var context = db.Context;
+
+            var startTime = DateTime.UtcNow.AddHours(1);
+            var endTime = startTime.AddHours(2);
+
+            var customerOne = new Customer("CutomerOne", "one@test.com");
+            var customerTwo = new Customer("CustomerTwo", "two@test.com");
+
+
+            context.Customers.Add(customerOne);
+            context.Customers.Add(customerTwo);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+            var useCase = new CustomerUseCase(context);
+
+            // Act
+            var result = await useCase.GetAll();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count());
         }
     }
 }
