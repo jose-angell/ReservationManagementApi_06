@@ -1,11 +1,8 @@
-﻿using FluentAssertions.Common;
-using ReservationManagementApi_06.Application;
+﻿using ReservationManagementApi_06.Application;
 using ReservationManagementApi_06.Domain;
-using ReservationManagementApi_06.Dtos.Reservation;
 using ReservationManagementApi_06.Dtos.Resource;
 using ReservationManagementApi_06.Exceptions;
 using ReservationManagementApi_06.Tests.TestSupport;
-using System.Reflection.PortableExecutable;
 
 namespace ReservationManagementApi_06.Tests.Application
 {
