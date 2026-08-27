@@ -2,38 +2,49 @@
 
 API para la gestión de reservas (Reservation Management API).
 
-Estado del proyecto
-- Estado: En desarrollo (prototipo funcional).
-- Objetivo: Exponer endpoints REST para crear, consultar y gestionar reservas de recursos.
-- Plataforma: .NET 10.
+Estado actual
+- Plataforma: .NET 10
+- Estado: En desarrollo (prototipo funcional)
+- Cambios recientes relevantes:
+  - Migración del uso de DateTimeOffset a DateTime en entidades, DTOs, controladores, casos de uso y tests (propiedades StartDateTime, EndDateTime, CreatedAt y parámetros relacionados).
+  - Migraciones adaptadas para usar columnas tipo `timestamp` en lugar de `timestamptz` cuando procedía. Revisar la carpeta `Migrations`.
 
 Descripción breve
-Este proyecto implementa la lógica y los casos de uso básicos para gestionar recursos y sus reservas. Incluye capas de aplicación, dominio y persistencia (según la estructura del repositorio). Está pensado como backend para integrarse con clientes web o móviles.
+Este proyecto implementa la lógica necesaria para gestionar recursos y reservas, con capas de dominio, aplicación y persistencia. Está pensado como backend para clientes web o móviles.
 
 Características implementadas (resumen)
 - Modelos de dominio para recursos y reservas.
-- Casos de uso en la capa Application (p. ej. ResourceUseCase).
-- Endpoints API para operaciones CRUD básicas sobre reservas y recursos (pueden estar en desarrollo o incompletos).
-- Preparado para pruebas y despliegue local con .NET 10.
+- Casos de uso en la capa Application (ResourceUseCase, ReservationUseCase, ...).
+- Endpoints REST para recursos y reservas.
+- Pruebas unitarias y de aplicación (ver carpeta `ReservationManagementApi_06.Tests`).
 
 Requisitos
-- .NET 10 SDK instalado
-- (Opcional) SQL Server / base de datos configurada según la configuración del proyecto
+- .NET 10 SDK
+- Base de datos PostgreSQL (opcional para ejecución local según configuración)
 
-Cómo ejecutar (local)
-1. Clonar el repositorio
-2. Abrir la solución ReservationManagementApi_06.slnx en Visual Studio 2026 o usar dotnet CLI
-3. Restaurar paquetes: `dotnet restore`
-4. Compilar: `dotnet build`
-5. Ejecutar: `dotnet run --project <ruta-al-proyecto-API>`
+Cómo ejecutar localmente
+1. Restaurar paquetes: `dotnet restore`
+2. Compilar: `dotnet build`
+3. Ejecutar la API: `dotnet run --project ReservationManagementApi_06`
 
-Notas y siguientes pasos
-- Revisar e implementar control de errores y validaciones adicionales.
-- Añadir documentación de API (Swagger/OpenAPI) si no está presente.
-- Completar pruebas automatizadas y CI.
+Pruebas (resumen y cómo obtenerlo)
+- Ejecutar todas las pruebas: `dotnet test`
+- Generar resultados en formato TRX: `dotnet test --logger "trx;LogFileName=test_results.trx"`
+- Ejecutar con salida concisa en PowerShell: `dotnet test --no-build --logger "console;verbosity=minimal"`
+
+Estado actual de las pruebas
+- Nota: las pruebas no se han ejecutado automáticamente durante la última modificación por este agente. Para obtener un resumen actualizado (total de pruebas, pasadas, fallidas):
+  1) Desde la raíz del repositorio ejecuta `dotnet test`.
+  2) Revisa la salida en consola o abre `test_results.trx` con un visor compatible.
+
+Puntos a revisar tras la migración DateTimeOffset -> DateTime
+- Asegurarse de que las comparaciones de fechas usan DateTime.UtcNow y que DateTime.Kind se establece cuando sea necesario.
+- Comprobar serialización JSON y formatos de timestamp si hay clientes que dependan de un formato concreto.
+- Revisar y aplicar migraciones de base de datos si se requiere cambiar el esquema existente.
 
 Contribuciones
-Se aceptan contribuciones mediante pull requests. Por favor, describir cambios y añadir pruebas cuando sea posible.
+- Abrir pull requests con descripciones claras y pruebas cuando sea posible.
 
-Licencia
-Revisar el fichero de licencia del repositorio (si existe) o añadir una según se acuerde.
+Repositorio
+- https://github.com/jose-angell/ReservationManagementApi_06
+
