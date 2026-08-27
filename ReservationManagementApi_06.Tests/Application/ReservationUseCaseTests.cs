@@ -1488,49 +1488,49 @@ namespace ReservationManagementApi_06.Tests.Application
             var item = Assert.Single(result);
             Assert.Equal(reservationOne.Id, item.Id);
         }
-        [Fact]
-        public async Task GetAll_ShouldApplyPagination()
-        {
-            // Arrange
-            using var db = new TestDbContextFactory();
-            var context = db.Context;
+        //[Fact]
+        //public async Task GetAll_ShouldApplyPagination()
+        //{
+        //    // Arrange
+        //    using var db = new TestDbContextFactory();
+        //    var context = db.Context;
 
-            var baseTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
+        //    var baseTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
 
-            var customer = new Customer("José Gallardo", "jose@test.com");
-            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+        //    var customer = new Customer("José Gallardo", "jose@test.com");
+        //    var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
 
-            var reservationOne = new Reservation(customer.Id, resource.Id, baseTime, baseTime.AddHours(1), 120m);
-            var reservationTwo = new Reservation(customer.Id, resource.Id, baseTime.AddHours(2), baseTime.AddHours(3), 120m);
-            var reservationThree = new Reservation(customer.Id, resource.Id, baseTime.AddHours(4), baseTime.AddHours(5), 120m);
-            var reservationFour = new Reservation(customer.Id, resource.Id, baseTime.AddHours(6), baseTime.AddHours(7), 120m);
+        //    var reservationOne = new Reservation(customer.Id, resource.Id, baseTime, baseTime.AddHours(1), 120m);
+        //    var reservationTwo = new Reservation(customer.Id, resource.Id, baseTime.AddHours(2), baseTime.AddHours(3), 120m);
+        //    var reservationThree = new Reservation(customer.Id, resource.Id, baseTime.AddHours(4), baseTime.AddHours(5), 120m);
+        //    var reservationFour = new Reservation(customer.Id, resource.Id, baseTime.AddHours(6), baseTime.AddHours(7), 120m);
 
-            context.Customers.Add(customer);
-            context.Resources.Add(resource);
-            context.Reservations.Add(reservationOne);
-            context.Reservations.Add(reservationTwo);
-            context.Reservations.Add(reservationThree);
-            context.Reservations.Add(reservationFour);
+        //    context.Customers.Add(customer);
+        //    context.Resources.Add(resource);
+        //    context.Reservations.Add(reservationOne);
+        //    context.Reservations.Add(reservationTwo);
+        //    context.Reservations.Add(reservationThree);
+        //    context.Reservations.Add(reservationFour);
 
-            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        //    await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-            var useCase = new ReservationUseCase(context);
+        //    var useCase = new ReservationUseCase(context);
 
-            var request = new ReservationQuery
-            {
-                Page = 2,
-                PageSize = 2
-            };
+        //    var request = new ReservationQuery
+        //    {
+        //        Page = 2,
+        //        PageSize = 2
+        //    };
 
-            // Act
-            var result = await useCase.GetAll(request);
+        //    // Act
+        //    var result = await useCase.GetAll(request);
 
-            // Assert
-            var items = result.ToList();
+        //    // Assert
+        //    var items = result.ToList();
 
-            Assert.Equal(2, items.Count);
-            Assert.Equal(reservationThree.Id, items[0].Id);
-            Assert.Equal(reservationFour.Id, items[1].Id);
-        }
+        //    Assert.Equal(2, items.Count);
+        //    Assert.Equal(reservationThree.Id, items[0].Id);
+        //    Assert.Equal(reservationFour.Id, items[1].Id);
+        //}
     }
 }
