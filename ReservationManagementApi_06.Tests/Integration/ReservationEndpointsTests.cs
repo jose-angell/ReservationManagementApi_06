@@ -2,7 +2,6 @@
 using ReservationManagementApi_06.Dtos.Reservation;
 using System.Net;
 using System.Net.Http.Json;
-using Xunit;
 
 namespace ReservationManagementApi_06.Tests.Integration;
 
@@ -144,5 +143,68 @@ public class ReservationEndpointsTests
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
-   
+    [Fact]
+    public async Task PatchConfirmReservation_ShouldReturnNoContent_WhenReservationIsPending()
+    {
+        // Arrange
+        await _factory.ResetDatabaseAsync();
+
+        Guid reservationId = Guid.Empty;
+
+        await _factory.SeedAsync(async context =>
+        {
+            var startTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var reservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 240m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(reservation);
+
+            await context.SaveChangesAsync();
+
+            reservationId = reservation.Id;
+        });
+
+        // Act
+        var response = await _client.PatchAsync($"/api/reservations/{reservationId}/confirm", content: null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+    [Fact]
+    public async Task DeleteReservation_ShouldReturnNoContent_WhenReservationIsDeleting()
+    {
+        // Arrange
+        await _factory.ResetDatabaseAsync();
+
+        Guid reservationId = Guid.Empty;
+
+        await _factory.SeedAsync(async context =>
+        {
+            var startTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
+            var endTime = startTime.AddHours(2);
+
+            var customer = new Customer("José Gallardo", "jose@test.com");
+            var resource = new Resource("Sala A", "Sala de juntas", 15, 120m);
+            var reservation = new Reservation(customer.Id, resource.Id, startTime, endTime, 240m);
+
+            context.Customers.Add(customer);
+            context.Resources.Add(resource);
+            context.Reservations.Add(reservation);
+
+            await context.SaveChangesAsync();
+
+            reservationId = reservation.Id;
+        });
+
+        // Act
+        var response = await _client.DeleteAsync($"/api/reservations/{reservationId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
 }
